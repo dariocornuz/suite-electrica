@@ -878,6 +878,18 @@ function evaluarRatio(g){
 /* Valores típicos de concentración (IEC 60599, transformadores sin OLTC comunicante) */
 const TIPICOS_IEC = {h2:150, ch4:130, c2h2:20, c2h4:280, c2h6:90, co:600, co2:14000};
 
+/* Compuerta de aplicabilidad para Duval/IEC/Rogers/Key Gas: "generación significativa"
+   se cumple si un gas supera su valor típico IEC 60599 (ruido de fondo normal) O si ya
+   superó su propio límite Nivel 1 individual IEEE C57.104 (Tabla mostrada en Indicadores
+   Automáticos). Sin este segundo criterio, un gas podía figurar "Nivel 2" en esa tabla
+   y el sistema declarar igualmente "todos los gases bajo sus valores típicos" para los
+   métodos por relación/Duval — una contradicción entre dos secciones del mismo informe. */
+function generacionSignificativa(g){
+  return ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) ||
+         g.co > TIPICOS_IEC.co ||
+         GASES.some(x => x.tdcg && g[x.clave] > x.lim[0]);
+}
+
 const CASOS_IEC = {
   PD:{nombre:'Descargas parciales', css:'warn',
       desc:'Descargas de tipo corona en cavidades gaseosas o burbujas, con posible depósito de cera (X-wax) en el papel.'},
@@ -904,9 +916,8 @@ function fmtRazon(r){
 }
 
 function evaluarIEC(g){
-  // Aplicabilidad: al menos un gas combustible sobre sus valores típicos
-  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) ||
-                 g.co > TIPICOS_IEC.co;
+  // Aplicabilidad: al menos un gas combustible sobre su valor típico IEC o su límite Nivel 1 IEEE
+  const aplica = generacionSignificativa(g);
   const r1 = razon(g.c2h2, g.c2h4);   // C2H2/C2H4
   const r2 = razon(g.ch4,  g.h2);     // CH4/H2
   const r3 = razon(g.c2h4, g.c2h6);   // C2H4/C2H6
@@ -953,7 +964,7 @@ const CASOS_ROGERS = {
 };
 function evaluarRogers(g){
   const r1 = razon(g.c2h2, g.c2h4), r2 = razon(g.ch4, g.h2), r5 = razon(g.c2h4, g.c2h6);
-  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) || g.co > TIPICOS_IEC.co;
+  const aplica = generacionSignificativa(g);
   if((g.h2+g.ch4+g.c2h2+g.c2h4+g.c2h6) <= 0)
     return {valido:false, aplica:false, r1, r2, r5, caso:null, txt:'Sin datos', css:'na',
       desc:'Ingrese concentraciones de gases combustibles para calcular las relaciones de Rogers.'};
@@ -989,7 +1000,7 @@ const CASOS_KEYGAS = {
 };
 function evaluarKeyGas(g){
   const tdcg = calcTDCG(g);
-  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) || g.co > TIPICOS_IEC.co;
+  const aplica = generacionSignificativa(g);
   const base = g.h2 + g.ch4 + g.c2h6 + g.c2h4 + g.c2h2;   // combustibles sin CO
   const pct = {
     h2:  tdcg>0 ? 100*g.h2/tdcg : 0,   ch4: tdcg>0 ? 100*g.ch4/tdcg : 0,
@@ -1409,7 +1420,7 @@ function actualizar(){
      interpreta con generación significativa de gases. Con todos los gases combustibles
      bajo sus valores típicos, la posición del punto es ruido de fondo y el equipo se
      declara en condición normal — nunca en falla. */
-  const genSignificativa = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]);
+  const genSignificativa = generacionSignificativa(g);
   const suma = g.ch4 + g.c2h4 + g.c2h2;
   let zona = null, pch4 = null, pc2h4 = null, pc2h2 = null, duvalNormal = false;
   if(suma > 0){
