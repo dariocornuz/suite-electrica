@@ -47,6 +47,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font
 .topbar{background:var(--navy);color:#fff;position:relative}
 .topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--warn) 25% 50%,var(--high) 50% 75%,var(--crit) 75% 100%)}
 .topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+
+/* ===== Navegación rápida ===== */
+.quicknav{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:0 2px 6px rgba(13,43,69,.06);display:flex;gap:4px;overflow-x:auto;white-space:nowrap;padding:0 14px;scrollbar-width:thin}
+.quicknav a{flex:0 0 auto;font:600 12px var(--sans);letter-spacing:.02em;color:var(--muted);text-decoration:none;padding:11px 10px;border-bottom:2px solid transparent}
+.quicknav a:hover{color:var(--blue)}
+.quicknav a:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+section{scroll-margin-top:52px}
 .brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
 .brand-mark svg{display:block}
 .brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(24px,4vw,34px);letter-spacing:.06em;text-transform:uppercase;line-height:1.05}
@@ -234,9 +241,84 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   .result-card .rc-zona{font-size:42px}
 }
 @media print{
-  .topbar .top-actions,.hist-actions,#futuros,.btn{display:none!important}
-  body{background:#fff}
-  .card,.result-card{box-shadow:none}
+  @page{size:A4;margin:12mm 14mm}
+
+  /* Fuera del informe: navegación, acciones, historial y contenido didáctico/de marketing */
+  .quicknav,.topbar .top-actions,.hist-actions,#futuros,#historial,.btn,
+  details.mi,.na-overlay{display:none!important}
+  /* tablas de referencia estáticas (no son resultados del análisis) */
+  #iec60599 .ind-grid>.card:nth-child(2),
+  #rogers .ind-grid>.card:nth-child(2),
+  #keygas .ind-grid>.card:nth-child(2),
+  #indicadores .ind-grid>.card:nth-child(2) .tbl-wrap{display:none!important}
+  /* Duval 4/5: si el triángulo no aplica al caso, no tiene sentido imprimirlo */
+  .duval-grid .card:has(.na-overlay.visible){display:none!important}
+
+  html{scroll-behavior:auto}
+  body{background:#fff;font-size:11px;line-height:1.35}
+  section{margin-bottom:10px}
+  main{padding:4mm 0 6mm;max-width:none}
+  .card,.result-card,.gas,.ratio-box,tr,.fq-item{break-inside:avoid}
+  h2,h3{break-after:avoid}
+
+  .topbar{background:#fff!important;color:var(--ink);border-bottom:2px solid var(--navy)}
+  .topbar::after{display:none}
+  .topbar-inner{padding:6px 0;gap:10px}
+  .brand-mark{width:30px;height:30px;border-color:var(--navy)}
+  .brand-mark svg polygon{stroke:var(--navy)}
+  .brand h1{font-size:16px;color:var(--navy)}
+  .brand .sub{font-size:9.5px;color:var(--muted)}
+  .brand .autor{font-size:8.5px;color:var(--muted)}
+
+  .kicker{font-size:8.5px;margin:0 0 2px}
+  h2{font-size:14px;margin:0 0 6px}
+  h3{font-size:12px;margin:0 0 5px}
+  .card{padding:8px 10px;box-shadow:none;border-color:#c7d0d9}
+  .result-card{padding:10px 12px;box-shadow:none}
+
+  details.card{border:1px solid #c7d0d9}
+  details.card summary{padding:6px 10px;font-size:12px}
+  details.card summary .chev{display:none}
+  details.card .inner{padding:2px 10px 6px}
+  .form-grid{gap:2px 14px}
+  .field label{font-size:9px;margin-bottom:0}
+  .field input,.field textarea,.field select{border:none;background:transparent;padding:1px 0;font:600 11px var(--sans);color:var(--ink)}
+  .field textarea{min-height:auto}
+
+  .gas-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}
+  .gas{padding:5px 7px;box-shadow:none}
+  .gas .nombre{font-size:8.5px;margin:0 0 3px}
+  .gas input{border:none;background:transparent;padding:0;font-size:11px}
+
+  .ind-grid,.duval-grid{gap:8px}
+  .big-val{font-size:22px}
+  .ind-desc,.nota{font-size:9.5px;margin-top:4px}
+  table.tbl{font-size:9.5px}
+  table.tbl th{padding:4px 6px;font-size:8px}
+  table.tbl td{padding:3px 6px}
+
+  #duvalSVG{max-width:230px;margin:0 auto}
+  #duval4SVG,#duval5SVG{max-width:200px;margin:0 auto}
+  .duval-pcts{margin-top:4px}
+  .pct{font-size:10px;padding:2px 6px}
+  .legend{font-size:8.5px;gap:6px;margin-top:5px}
+
+  .result-card .rc-zona{font-size:26px}
+  .result-card .rc-clasif{font-size:11px;margin:2px 0 6px}
+  .rc-row{padding:3px 0;font-size:9.5px}
+  .rc-estado{margin-top:6px;padding:4px 8px;font-size:9px}
+  .interp{font-size:10px;line-height:1.4}
+  .interp p{margin:0 0 5px}
+
+  .ratio-grid{gap:6px}
+  .ratio-box{padding:5px 7px}
+  .ratio-box .rv{font-size:15px}
+
+  ul.reco li{padding:4px 0 4px 16px;font-size:10px}
+
+  footer{margin-top:6px}
+  .foot-inner{padding:6px 0;font-size:8.5px}
+  .foot-inner .ver{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;scroll-behavior:auto}
@@ -264,6 +346,21 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
     </div>
   </div>
 </header>
+
+<nav class="quicknav" aria-label="Navegación rápida entre secciones">
+  <a href="#info">Transformador</a>
+  <a href="#cromatografia">Gases</a>
+  <a href="#fisicoquimicos">Fisicoquímicos</a>
+  <a href="#indicadores">Indicadores</a>
+  <a href="#duval">Duval 1</a>
+  <a href="#iec60599">IEC 60599</a>
+  <a href="#rogers">Rogers</a>
+  <a href="#keygas">Key Gas</a>
+  <a href="#duval45">Duval 4/5</a>
+  <a href="#sintesis">Síntesis</a>
+  <a href="#recomendaciones">Recomendaciones</a>
+  <a href="#historial">Historial</a>
+</nav>
 
 <main>
 
