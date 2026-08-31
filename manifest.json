@@ -1,0 +1,17 @@
+{
+  "name": "Sistema de Diagnóstico DGA — Transformadores de Potencia",
+  "short_name": "DGA Duval",
+  "description": "Sistema profesional de diagnóstico por análisis de gases disueltos (DGA) para transformadores de potencia. Triángulo de Duval, TDCG, relación CO2/CO.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#eceff3",
+  "theme_color": "#0d2b45",
+  "lang": "es",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
