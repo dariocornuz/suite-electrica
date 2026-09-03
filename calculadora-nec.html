@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Parámetros Eléctricos NEC/NFPA 70E</title>
+<meta name="description" content="Calculadora de parámetros eléctricos con fundamento en el NEC (NFPA 70) y NFPA 70E: conversiones, caída de tensión, pérdidas en transformadores y selección de conductores AWG. Ingeniero Darío Cornuz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3;--panel:#ffffff;--panel-alt:#f6f8fa;--ink:#17242f;--muted:#5b6a79;
+  --navy:#0d2b45;--navy-2:#123a5c;--blue:#1a5fa8;--line:#d5dde5;
+  --ok:#1e8a4c;--warn:#c99400;--high:#d96c1e;--crit:#c22f3d;--amber:#b8860b;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,Segoe UI,Arial,sans-serif;
+  --disp:'Barlow Condensed','IBM Plex Sans',sans-serif;
+  --radius:10px;--shadow:0 1px 2px rgba(13,43,69,.06),0 4px 14px rgba(13,43,69,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+.topbar{background:var(--navy);color:#fff;position:relative}
+.topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--blue) 25% 50%,var(--amber) 50% 75%,var(--crit) 75% 100%)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand-mark svg{display:block}
+.brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.6vw,30px);letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
+.brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
+.brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
+.top-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 12.5px var(--sans);padding:8px 13px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
+.btn:hover{background:#f0f4f8}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+section{margin-bottom:34px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin:0 0 4px}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px;color:var(--navy)}
+h3{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;color:var(--navy-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.aviso{background:#fdf6df;border:1px solid #ecd98a;border-left:5px solid var(--amber);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;color:#5c4a08;line-height:1.6}
+.aviso strong{color:#3d3005}
+.aviso a{color:#3d3005}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tab{font:600 13px var(--sans);padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--navy-2);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.tab .n{font-family:var(--mono);font-size:11px;background:var(--panel-alt);border-radius:999px;padding:1px 7px;color:var(--muted)}
+.tab:hover{background:#f0f4f8}
+.tab.activo{background:var(--navy);border-color:var(--navy);color:#fff}
+.tab.activo .n{background:rgba(255,255,255,.18);color:#fff}
+.modulo{display:none}
+.modulo.activo{display:block}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.field .hint{display:block;font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-top:2px}
+.field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:400 14px var(--sans);color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+.actions-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.result-card{background:var(--navy);color:#eaf2f9;border-radius:var(--radius);padding:22px;border-left:6px solid var(--blue);box-shadow:var(--shadow);margin-top:18px}
+.result-card .rc-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fb2d1;margin-bottom:12px}
+.result-card .rc-val{font-family:var(--disp);font-weight:700;font-size:40px;line-height:1;letter-spacing:.02em}
+.result-card .rc-val small{font-size:.42em;font-weight:500;color:#9db8cf;margin-left:6px}
+.result-card .rc-sub{font-size:14.5px;font-weight:600;margin:6px 0 14px;color:#eaf2f9}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.14);font-size:13.5px}
+.rc-row .k{color:#9db8cf;text-transform:uppercase;letter-spacing:.07em;font-size:11.5px;font-family:var(--mono)}
+.rc-row .v{font-weight:600;text-align:right}
+.rc-estado{margin-top:14px;font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;border-radius:7px;background:rgba(255,255,255,.1);text-align:center}
+.rc-estado.ok{background:rgba(30,138,76,.28)}
+.rc-estado.crit{background:rgba(194,47,61,.32)}
+details.mi{margin:16px 0 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-alt);font-size:13.5px;color:var(--ink)}
+details.mi summary{cursor:pointer;padding:10px 14px;font-weight:600;color:var(--blue);font-size:13px;user-select:none;list-style:none}
+details.mi summary::before{content:'§  ';font-weight:400}
+details.mi summary::-webkit-details-marker{display:none}
+details.mi[open] summary{border-bottom:1px solid var(--line)}
+details.mi .mi-body{padding:12px 14px 14px;line-height:1.6}
+details.mi .mi-body p{margin:0 0 8px}
+details.mi .mi-body p:last-child{margin:0}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:7px 9px;border-bottom:2px solid var(--line)}
+table.tbl td{padding:6px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl td.num{font-family:var(--mono);text-align:right}
+table.tbl tr:last-child td{border-bottom:none}
+.tbl-wrap{overflow-x:auto}
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
+.foot-inner{max-width:1180px;margin:0 auto;padding:26px 22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.foot-inner .ver{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8fb2d1}
+.foot-inner strong{color:#fff}
+@media (max-width:640px){.result-card .rc-val{font-size:32px}}
+@media print{.topbar .top-actions,.tabs,.btn{display:none!important}.modulo{display:block!important;page-break-after:always}body{background:#fff}.card,.result-card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><path d="M17 2 6 17h8l-3 11 13-17h-8z" fill="#f2c94c"/></svg>
+    </div>
+    <div class="brand">
+      <h1>Parámetros Eléctricos NEC</h1>
+      <p class="sub">Conversiones, caída de tensión, pérdidas y selección de conductores — NEC (NFPA 70) / NFPA 70E</p>
+      <p class="autor">Ingeniero Darío Cornuz</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">Sistema DGA</a>
+      <a class="btn ghost" href="calculadora-ric.html">Calculadora RIC</a>
+      <a class="btn ghost" href="curvas-proteccion.html">Curvas de Protección</a>
+      <a class="btn ghost" href="checklist-nfpa70e.html">Checklist NFPA 70E</a>
+      <button class="btn ghost" onclick="window.print()" type="button">Imprimir</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="aviso">
+  <div class="aviso">
+    <strong>Uso de referencia.</strong> Esta herramienta calcula con los métodos y tablas de uso habitual del <strong>NEC (National Electrical Code, NFPA 70)</strong> y <strong>NFPA 70E</strong>: ampacidad de conductores de cobre (Tabla 310.16, columna 75 °C), factores de corrección de temperatura y agrupamiento (310.15(B)(1) y 310.15(C)(1)), y el método de caída de tensión por constante K en circular mils. Son valores de referencia para estimación de terreno — verifique siempre contra la edición vigente del NEC/NFPA 70E aplicable en su jurisdicción, la ficha técnica del fabricante del conductor y el criterio de un ingeniero o electricista licenciado.
+  </div>
+</section>
+
+<section id="modulos">
+  <div class="kicker">Módulos de cálculo</div>
+  <h2>Calculadora de Parámetros Eléctricos</h2>
+  <div class="tabs" role="tablist" aria-label="Módulos de cálculo">
+    <button class="tab activo" data-mod="conv" type="button"><span class="n">01</span> Conversiones</button>
+    <button class="tab" data-mod="vd" type="button"><span class="n">02</span> Caída de Tensión</button>
+    <button class="tab" data-mod="amp" type="button"><span class="n">03</span> Selección de Conductor</button>
+    <button class="tab" data-mod="trafo" type="button"><span class="n">04</span> Pérdidas en Transformador</button>
+  </div>
+
+  <!-- 01 CONVERSIONES -->
+  <div class="modulo activo" id="mod-conv">
+    <div class="card">
+      <h3>Conversiones de Uso Frecuente</h3>
+      <div class="mini-grid">
+        <div>
+          <h3 style="font-size:15px">Potencia: kW ↔ HP</h3>
+          <div class="form-grid">
+            <div class="field"><label for="cv_kw">kW</label><input id="cv_kw" type="number" step="0.01" oninput="convPotencia('kw')"></div>
+            <div class="field"><label for="cv_hp">HP</label><input id="cv_hp" type="number" step="0.01" oninput="convPotencia('hp')"></div>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:15px">Temperatura: °C ↔ °F</h3>
+          <div class="form-grid">
+            <div class="field"><label for="cv_c">°C</label><input id="cv_c" type="number" step="0.1" oninput="convTemp('c')"></div>
+            <div class="field"><label for="cv_f">°F</label><input id="cv_f" type="number" step="0.1" oninput="convTemp('f')"></div>
+          </div>
+        </div>
+      </div>
+      <h3 style="font-size:15px;margin-top:22px">Sección de Conductor: AWG/kcmil ↔ mm²</h3>
+      <div class="form-grid">
+        <div class="field"><label for="cv_awg">Calibre AWG / kcmil</label><select id="cv_awg" onchange="convSeccion('awg')"></select></div>
+        <div class="field"><label for="cv_mm2">mm² (equivalente más cercano)</label><input id="cv_mm2" type="number" step="0.01" oninput="convSeccion('mm2')"></div>
+      </div>
+      <div id="cv_out" style="margin-top:10px;font-size:13.5px;color:var(--muted)"></div>
+      <details class="mi"><summary>Fundamento</summary>
+        <div class="mi-body">
+          <p>1 HP = 0,746 kW. Equivalencia de sección basada en circular mils (1 kcmil = 0,5067 mm²), tabla de calibres AWG estándar (NEC Capítulo 9, Tabla 8).</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- 02 CAIDA DE TENSION NEC -->
+  <div class="modulo" id="mod-vd">
+    <div class="card">
+      <h3>Caída de Tensión — Método de la Constante K</h3>
+      <div class="form-grid">
+        <div class="field"><label for="vd_sistema">Sistema</label>
+          <select id="vd_sistema">
+            <option value="mono">Monofásico (120 / 240 V)</option>
+            <option value="tri">Trifásico (208 / 480 V)</option>
+          </select>
+        </div>
+        <div class="field"><label for="vd_v">Tensión nominal (V)</label><input id="vd_v" type="number" step="1" value="240"></div>
+        <div class="field"><label for="vd_i">Corriente (A)</label><input id="vd_i" type="number" step="0.1" value="40"></div>
+        <div class="field"><label for="vd_d">Distancia en un sentido</label><input id="vd_d" type="number" step="1" value="30"></div>
+        <div class="field"><label for="vd_unidad">Unidad de distancia</label>
+          <select id="vd_unidad">
+            <option value="m">Metros</option>
+            <option value="ft">Pies (ft)</option>
+          </select>
+        </div>
+        <div class="field"><label for="vd_awg">Calibre del conductor</label><select id="vd_awg"></select></div>
+        <div class="field"><label for="vd_mat">Material</label>
+          <select id="vd_mat">
+            <option value="cu">Cobre (K = 12,9)</option>
+            <option value="al">Aluminio (K = 21,2)</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions-row"><button class="btn primary" style="background:var(--blue);color:#fff;border-color:var(--blue)" onclick="calcVD()" type="button">Calcular caída de tensión</button></div>
+      <div class="result-card" id="vd_out" hidden></div>
+      <details class="mi"><summary>Fundamento y fórmula</summary>
+        <div class="mi-body">
+          <p><strong>Monofásico:</strong> VD = (2 · K · I · D) / CM &nbsp;·&nbsp; <strong>Trifásico:</strong> VD = (1,732 · K · I · D) / CM</p>
+          <p>K = constante de resistividad en Ω·cmil/ft (12,9 cobre, 21,2 aluminio, ~75 °C), D = distancia en un sentido en pies, CM = sección del conductor en circular mils.</p>
+          <p>Criterio de referencia habitual del NEC (notas informativas 210.19(A) y 215.2(A)): caída de tensión combinada alimentador + circuito derivado ≤ 5 %, recomendando no más de 3 % en cada tramo. No es un límite obligatorio del NEC en la mayoría de los casos, sino una recomendación de diseño ampliamente adoptada — verifique el criterio del proyecto.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- 03 SELECCION DE CONDUCTOR NEC -->
+  <div class="modulo" id="mod-amp">
+    <div class="card">
+      <h3>Selección de Conductor por Ampacidad (NEC Tabla 310.16)</h3>
+      <div class="form-grid">
+        <div class="field"><label for="am_ib">Corriente de diseño Ib (A)</label><input id="am_ib" type="number" step="0.1" value="30"></div>
+        <div class="field"><label for="am_temp">Temperatura ambiente (°C)</label><input id="am_temp" type="number" step="1" value="30"></div>
+        <div class="field"><label for="am_n">N.º de conductores activos agrupados</label><input id="am_n" type="number" step="1" min="1" value="3"></div>
+      </div>
+      <div class="actions-row"><button class="btn primary" style="background:var(--blue);color:#fff;border-color:var(--blue)" onclick="calcAmp()" type="button">Calcular calibre mínimo</button></div>
+      <div class="result-card" id="am_out" hidden></div>
+      <details class="mi"><summary>Fundamento y tabla utilizada</summary>
+        <div class="mi-body">
+          <p>Conductor de cobre, aislación 75 °C (THWN/THHN columna 75 °C), NEC Tabla 310.16. Factor de temperatura ambiente según Tabla 310.15(B)(1); factor de ajuste por número de conductores activos agrupados según Tabla 310.15(C)(1). Valores de referencia — confirme con la edición vigente del NEC.</p>
+          <div class="tbl-wrap"><table class="tbl" id="am_tabla_ref"><thead><tr><th>Calibre</th><th>Ampacidad ref. (A)</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- 04 PERDIDAS TRANSFORMADOR -->
+  <div class="modulo" id="mod-trafo">
+    <div class="card">
+      <h3>Pérdidas y Eficiencia de Transformador</h3>
+      <div class="form-grid">
+        <div class="field"><label for="tf_s">Potencia nominal S (kVA)</label><input id="tf_s" type="number" step="1" value="500"></div>
+        <div class="field"><label for="tf_po">Pérdidas en vacío Po (W)</label><input id="tf_po" type="number" step="1" value="900"></div>
+        <div class="field"><label for="tf_pk">Pérdidas de carga a 100 % Pk (W)</label><input id="tf_pk" type="number" step="1" value="5500"></div>
+        <div class="field"><label for="tf_carga">Carga actual (%)</label><input id="tf_carga" type="number" step="1" value="75"></div>
+        <div class="field"><label for="tf_fp">Factor de potencia de la carga</label><input id="tf_fp" type="number" step="0.01" min="0.1" max="1" value="0.9"></div>
+      </div>
+      <div class="actions-row"><button class="btn primary" style="background:var(--blue);color:#fff;border-color:var(--blue)" onclick="calcTrafo()" type="button">Calcular pérdidas y eficiencia</button></div>
+      <div class="result-card" id="tf_out" hidden></div>
+      <details class="mi"><summary>Fundamento y fórmulas</summary>
+        <div class="mi-body">
+          <p>Pérdidas totales a la carga actual: P<sub>total</sub> = Po + Pk · (carga%)²</p>
+          <p>Eficiencia: η = P<sub>salida</sub> / (P<sub>salida</sub> + P<sub>total</sub>) × 100, con P<sub>salida</sub> = S · (carga%) · cos φ</p>
+          <p>Carga de máxima eficiencia (punto donde pérdidas en vacío = pérdidas de carga): carga<sub>ópt</sub>% = √(Po / Pk) × 100</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 <strong>Ingeniero Darío Cornuz</strong> · Suite Eléctrica — Parámetros NEC/NFPA 70E</span>
+    <span class="ver">Versión 1.0 · GitHub Pages · Sin servidores ni bases de datos externas</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('activo'));
+  document.querySelectorAll('.modulo').forEach(x => x.classList.remove('activo'));
+  t.classList.add('activo');
+  $('mod-' + t.dataset.mod).classList.add('activo');
+}));
+
+/* ===== Tabla AWG / kcmil (circular mils) ===== */
+const AWG = [
+  {l:'14 AWG', cm:4110}, {l:'12 AWG', cm:6530}, {l:'10 AWG', cm:10380}, {l:'8 AWG', cm:16510},
+  {l:'6 AWG', cm:26240}, {l:'4 AWG', cm:41740}, {l:'3 AWG', cm:52620}, {l:'2 AWG', cm:66360},
+  {l:'1 AWG', cm:83690}, {l:'1/0 AWG', cm:105600}, {l:'2/0 AWG', cm:133100}, {l:'3/0 AWG', cm:167800},
+  {l:'4/0 AWG', cm:211600}, {l:'250 kcmil', cm:250000}, {l:'300 kcmil', cm:300000},
+  {l:'350 kcmil', cm:350000}, {l:'400 kcmil', cm:400000}, {l:'500 kcmil', cm:500000}
+];
+const cm2mm2 = cm => cm * 0.0005067;
+
+/* Ampacidad NEC Tabla 310.16, 75°C, cobre — mismo orden que AWG[] */
+const AMPACIDAD_NEC = [20,25,35,50,65,85,100,115,130,150,175,200,230,255,285,310,335,380];
+
+function poblarSelectAWG(sel){
+  sel.innerHTML = AWG.map((a,i) => `<option value="${i}">${a.l} (${cm2mm2(a.cm).toFixed(1)} mm²)</option>`).join('');
+}
+poblarSelectAWG($('cv_awg'));
+poblarSelectAWG($('vd_awg'));
+$('vd_awg').selectedIndex = 4; // 6 AWG por defecto
+
+(function poblarTablaAmpacidad(){
+  const tbody = $('am_tabla_ref').querySelector('tbody');
+  tbody.innerHTML = AWG.map((a,i) => `<tr><td>${a.l}</td><td class="num">${AMPACIDAD_NEC[i]}</td></tr>`).join('');
+})();
+
+/* ===== 01 Conversiones ===== */
+function convPotencia(origen){
+  if(origen === 'kw'){
+    const kw = Number($('cv_kw').value);
+    if(!isNaN(kw)) $('cv_hp').value = (kw / 0.746).toFixed(3);
+  } else {
+    const hp = Number($('cv_hp').value);
+    if(!isNaN(hp)) $('cv_kw').value = (hp * 0.746).toFixed(3);
+  }
+}
+function convTemp(origen){
+  if(origen === 'c'){
+    const c = Number($('cv_c').value);
+    if(!isNaN(c)) $('cv_f').value = (c * 9/5 + 32).toFixed(1);
+  } else {
+    const f = Number($('cv_f').value);
+    if(!isNaN(f)) $('cv_c').value = ((f - 32) * 5/9).toFixed(1);
+  }
+}
+function convSeccion(origen){
+  const out = $('cv_out');
+  if(origen === 'awg'){
+    const a = AWG[Number($('cv_awg').value)];
+    $('cv_mm2').value = cm2mm2(a.cm).toFixed(2);
+    out.textContent = `${a.l} = ${a.cm.toLocaleString('es-CL')} cmil = ${cm2mm2(a.cm).toFixed(2)} mm²`;
+  } else {
+    const mm2 = Number($('cv_mm2').value);
+    if(isNaN(mm2) || mm2 <= 0){ out.textContent = ''; return; }
+    let mejor = 0, dif = Infinity;
+    AWG.forEach((a,i) => { const d = Math.abs(cm2mm2(a.cm) - mm2); if(d < dif){ dif = d; mejor = i; } });
+    $('cv_awg').selectedIndex = mejor;
+    out.textContent = `Calibre AWG más cercano: ${AWG[mejor].l} (${cm2mm2(AWG[mejor].cm).toFixed(2)} mm²)`;
+  }
+}
+
+/* ===== 02 Caída de tensión NEC ===== */
+function calcVD(){
+  const sistema = $('vd_sistema').value;
+  const v = Number($('vd_v').value) || 1;
+  const i = Number($('vd_i').value) || 0;
+  let d = Number($('vd_d').value) || 0;
+  if($('vd_unidad').value === 'm') d = d * 3.28084;
+  const cm = AWG[Number($('vd_awg').value)].cm;
+  const K = $('vd_mat').value === 'cu' ? 12.9 : 21.2;
+  const factor = sistema === 'tri' ? 1.732 : 2;
+  const vd = (factor * K * i * d) / cm;
+  const vdPct = (vd / v) * 100;
+  const cumple = vdPct <= 3;
+  const out = $('vd_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">Caída de tensión calculada</div>
+    <div class="rc-val">${vdPct.toFixed(2)}<small>%</small></div>
+    <div class="rc-sub">${vd.toFixed(2)} V sobre ${v.toFixed(0)} V nominales</div>
+    <div class="rc-row"><span class="k">Calibre</span><span class="v">${AWG[Number($('vd_awg').value)].l}</span></div>
+    <div class="rc-row"><span class="k">Distancia (un sentido)</span><span class="v">${d.toFixed(1)} ft</span></div>
+    <div class="rc-row"><span class="k">Límite de referencia (por tramo)</span><span class="v">≤ 3 %</span></div>
+    <div class="rc-estado ${cumple?'ok':'crit'}">${cumple ? 'Dentro del criterio de referencia NEC' : 'Excede el 3 % de referencia — aumente el calibre o reduzca la distancia'}</div>`;
+}
+
+/* ===== 03 Seleccion de conductor NEC ===== */
+function factorTempNEC(t){
+  if(t<=25) return 1.05;
+  if(t<=30) return 1.00;
+  if(t<=35) return 0.94;
+  if(t<=40) return 0.88;
+  if(t<=45) return 0.82;
+  if(t<=50) return 0.75;
+  if(t<=55) return 0.67;
+  if(t<=60) return 0.58;
+  if(t<=65) return 0.33;
+  return null;
+}
+function factorAjusteNEC(n){
+  if(n<=3) return 1.00;
+  if(n<=6) return 0.80;
+  if(n<=9) return 0.70;
+  if(n<=20) return 0.50;
+  if(n<=30) return 0.45;
+  if(n<=40) return 0.40;
+  return 0.35;
+}
+function calcAmp(){
+  const ib = Number($('am_ib').value) || 0;
+  const ft = factorTempNEC(Number($('am_temp').value) || 30);
+  const fa = factorAjusteNEC(Number($('am_n').value) || 1);
+  const out = $('am_out');
+  out.hidden = false;
+  if(ft === null){
+    out.innerHTML = `
+      <div class="rc-kicker">Resultado</div>
+      <div class="rc-val" style="font-size:26px">Fuera de rango</div>
+      <div class="rc-sub">Temperatura ambiente superior a lo permitido para aislación 75 °C</div>
+      <div class="rc-estado crit">Use conductor con aislación de mayor temperatura (90 °C) o reduzca la temperatura ambiente</div>`;
+    return;
+  }
+  const factor = ft * fa;
+  const izReq = factor > 0 ? ib / factor : Infinity;
+  const idx = AMPACIDAD_NEC.findIndex(iz => iz >= izReq);
+  if(idx === -1){
+    out.innerHTML = `
+      <div class="rc-kicker">Resultado</div>
+      <div class="rc-val" style="font-size:26px">Fuera de tabla</div>
+      <div class="rc-sub">La corriente corregida (${izReq.toFixed(1)} A) supera el mayor calibre de referencia (${AMPACIDAD_NEC[AMPACIDAD_NEC.length-1]} A, 500 kcmil)</div>
+      <div class="rc-estado crit">Evalúe conductores en paralelo o calibres mayores</div>`;
+    return;
+  }
+  out.innerHTML = `
+    <div class="rc-kicker">Calibre mínimo de referencia</div>
+    <div class="rc-val" style="font-size:32px">${AWG[idx].l}</div>
+    <div class="rc-sub">Cobre — aislación 75 °C (THWN/THHN)</div>
+    <div class="rc-row"><span class="k">Ib (diseño)</span><span class="v">${ib.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Factor temperatura</span><span class="v">${ft.toFixed(2)}</span></div>
+    <div class="rc-row"><span class="k">Factor ajuste (agrupamiento)</span><span class="v">${fa.toFixed(2)}</span></div>
+    <div class="rc-row"><span class="k">Ampacidad corregida requerida</span><span class="v">${izReq.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Ampacidad de tabla del calibre elegido</span><span class="v">${AMPACIDAD_NEC[idx]} A</span></div>
+    <div class="rc-estado ok">Cumple el criterio de ampacidad corregida</div>`;
+}
+
+/* ===== 04 Perdidas transformador ===== */
+function calcTrafo(){
+  const s = Number($('tf_s').value) || 0;
+  const po = Number($('tf_po').value) || 0;
+  const pk = Number($('tf_pk').value) || 0;
+  const cargaPct = Number($('tf_carga').value) || 0;
+  const fp = Number($('tf_fp').value) || 1;
+  const carga = cargaPct / 100;
+  const perdidas = po + pk * carga * carga;
+  const pSalida = s * carga * fp * 1000; // kVA*carga*FP -> kW -> W
+  const eficiencia = pSalida / (pSalida + perdidas) * 100;
+  const cargaOptima = pk > 0 ? Math.sqrt(po / pk) * 100 : 0;
+  const out = $('tf_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">Pérdidas y eficiencia</div>
+    <div class="rc-val">${eficiencia.toFixed(2)}<small>% eficiencia</small></div>
+    <div class="rc-sub">A ${cargaPct}% de carga, cos φ ${fp.toFixed(2)}</div>
+    <div class="rc-row"><span class="k">Pérdidas totales</span><span class="v">${perdidas.toFixed(0)} W</span></div>
+    <div class="rc-row"><span class="k">Potencia de salida</span><span class="v">${(pSalida/1000).toFixed(1)} kW</span></div>
+    <div class="rc-row"><span class="k">Pérdidas en vacío (Po)</span><span class="v">${po.toFixed(0)} W</span></div>
+    <div class="rc-row"><span class="k">Pérdidas de carga a esta demanda</span><span class="v">${(pk*carga*carga).toFixed(0)} W</span></div>
+    <div class="rc-row"><span class="k">Carga de máxima eficiencia</span><span class="v">${cargaOptima.toFixed(1)} %</span></div>`;
+}
+</script>
+</body>
+</html>
