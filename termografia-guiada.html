@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis Termográfico Guiado</title>
+<meta name="description" content="Guía interactiva de termografía eléctrica: criterios de severidad por ΔT, calculadora de clasificación con corrección por carga, y casos ilustrativos típicos de fallas térmicas. Ingeniero Darío Cornuz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3;--panel:#ffffff;--panel-alt:#f6f8fa;--ink:#17242f;--muted:#5b6a79;
+  --navy:#0d2b45;--navy-2:#123a5c;--blue:#1a5fa8;--line:#d5dde5;
+  --ok:#1e8a4c;--warn:#c99400;--high:#d96c1e;--crit:#c22f3d;--amber:#b8860b;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,Segoe UI,Arial,sans-serif;
+  --disp:'Barlow Condensed','IBM Plex Sans',sans-serif;
+  --radius:10px;--shadow:0 1px 2px rgba(13,43,69,.06),0 4px 14px rgba(13,43,69,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+.topbar{background:var(--navy);color:#fff;position:relative}
+.topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--blue) 25% 50%,var(--amber) 50% 75%,var(--crit) 75% 100%)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.6vw,30px);letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
+.brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
+.brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
+.top-actions{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.btn{font:600 12px var(--sans);padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
+.btn:hover{background:#f0f4f8}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+section{margin-bottom:34px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin:0 0 4px}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px;color:var(--navy)}
+h3{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;color:var(--navy-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.aviso{background:#fdf6df;border:1px solid #ecd98a;border-left:5px solid var(--amber);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;color:#5c4a08;line-height:1.6}
+.aviso strong{color:#3d3005}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.field .hint{display:block;font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-top:2px}
+.field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:400 14px var(--sans);color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+.actions-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.result-card{background:var(--navy);color:#eaf2f9;border-radius:var(--radius);padding:22px;border-left:6px solid var(--blue);box-shadow:var(--shadow);margin-top:18px}
+.result-card .rc-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fb2d1;margin-bottom:12px}
+.result-card .rc-val{font-family:var(--disp);font-weight:700;font-size:44px;line-height:1;letter-spacing:.02em}
+.result-card .rc-val small{font-size:.4em;font-weight:500;color:#9db8cf;margin-left:6px}
+.result-card .rc-sub{font-size:14.5px;font-weight:600;margin:6px 0 14px;color:#eaf2f9}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.14);font-size:13.5px}
+.rc-row .k{color:#9db8cf;text-transform:uppercase;letter-spacing:.07em;font-size:11.5px;font-family:var(--mono)}
+.rc-row .v{font-weight:600;text-align:right}
+.rc-estado{margin-top:14px;font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;border-radius:7px;background:rgba(255,255,255,.1);text-align:center}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:7px 9px;border-bottom:2px solid var(--line)}
+table.tbl td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl tr:last-child td{border-bottom:none}
+.tbl-wrap{overflow-x:auto}
+.banda-chip{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:middle}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px}
+.caso{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.caso svg{width:100%;height:auto;display:block;background:#0a0a12}
+.caso .cuerpo{padding:14px 16px}
+.caso h4{margin:0 0 6px;font-family:var(--disp);font-size:17px;letter-spacing:.03em;color:var(--navy-2)}
+.caso p{margin:0 0 6px;font-size:13px;color:var(--ink)}
+.caso .etq{font:600 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ilustrativo-tag{display:inline-block;margin-top:8px;font:600 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#8a6a00;background:#fdf6df;border:1px solid #ecd98a;padding:2px 8px;border-radius:5px}
+details.mi{margin:16px 0 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-alt);font-size:13.5px;color:var(--ink)}
+details.mi summary{cursor:pointer;padding:10px 14px;font-weight:600;color:var(--blue);font-size:13px;user-select:none;list-style:none}
+details.mi summary::before{content:'§  ';font-weight:400}
+details.mi summary::-webkit-details-marker{display:none}
+details.mi[open] summary{border-bottom:1px solid var(--line)}
+details.mi .mi-body{padding:12px 14px 14px;line-height:1.6}
+details.mi .mi-body p{margin:0 0 8px}
+footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
+.foot-inner{max-width:1180px;margin:0 auto;padding:26px 22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.foot-inner .ver{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8fb2d1}
+.foot-inner strong{color:#fff}
+@media print{.topbar .top-actions,.btn{display:none!important}body{background:#fff}.card,.result-card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><path d="M17 2 6 17h8l-3 11 13-17h-8z" fill="#f2c94c"/></svg>
+    </div>
+    <div class="brand">
+      <h1>Termografía Guiada</h1>
+      <p class="sub">Criterios de severidad, calculadora de ΔT con corrección por carga y casos ilustrativos</p>
+      <p class="autor">Ingeniero Darío Cornuz</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">DGA</a>
+      <a class="btn ghost" href="calculadora-ric.html">RIC</a>
+      <a class="btn ghost" href="calculadora-nec.html">NEC</a>
+      <a class="btn ghost" href="curvas-proteccion.html">Curvas</a>
+      <a class="btn ghost" href="checklist-nfpa70e.html">Checklist</a>
+      <a class="btn ghost" href="flujo-potencia.html">Flujo de Potencia</a>
+      <a class="btn ghost" href="calidad-energia.html">Calidad de Energía</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="aviso">
+  <div class="aviso">
+    <strong>Contenido educativo — sin fotografías térmicas reales.</strong> Las imágenes de esta página son <strong>diagramas ilustrativos generados por computadora</strong> (gradientes de color estilo paleta térmica sobre siluetas esquemáticas), no termogramas reales de una cámara infrarroja. Se usan solo para explicar cómo leer un patrón de temperatura y qué causas suelen asociarse a cada patrón. Las bandas de severidad (ΔT) son criterios generales de uso habitual en termografía eléctrica (por ejemplo, guías de certificación IR Nivel I y prácticas como NETA MTS) — no reemplazan el criterio de un termógrafo certificado ni el procedimiento de inspección de su instalación.
+  </div>
+</section>
+
+<section id="criterios">
+  <div class="kicker">Guía de interpretación</div>
+  <h2>Criterios de Severidad por ΔT</h2>
+  <div class="card">
+    <p style="font-size:14px;color:var(--muted);margin-top:0">El ΔT es la diferencia de temperatura entre el punto medido y una referencia: un componente similar bajo carga similar (criterio comparativo, el más confiable), o la temperatura ambiente cuando no hay un componente similar disponible para comparar.</p>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>ΔT (componente similar)</th><th>Clasificación</th><th>Acción recomendada</th></tr></thead>
+      <tbody>
+        <tr><td><span class="banda-chip" style="background:#8fb2d1"></span>&lt; 1 °C</td><td>Sin anomalía significativa</td><td>Ninguna acción — condición normal</td></tr>
+        <tr><td><span class="banda-chip" style="background:var(--ok)"></span>1 – 3 °C</td><td>Posible deficiencia</td><td>Incluir en la próxima inspección de rutina</td></tr>
+        <tr><td><span class="banda-chip" style="background:var(--warn)"></span>4 – 15 °C</td><td>Deficiencia probable</td><td>Reparar cuando lo permita la programación</td></tr>
+        <tr><td><span class="banda-chip" style="background:var(--high)"></span>16 – 40 °C</td><td>Deficiencia mayor</td><td>Reparar lo antes posible</td></tr>
+        <tr><td><span class="banda-chip" style="background:var(--crit)"></span>&gt; 40 °C</td><td>Deficiencia crítica</td><td>Reparar de inmediato — riesgo de falla</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:13px;color:var(--muted);margin-top:12px">Otros factores que afectan la lectura: emisividad de la superficie, viento y corrientes de aire en exteriores, ángulo de medición, y sobre todo la <strong>carga real del equipo al momento de la inspección</strong> — un punto caliente medido con carga parcial puede empeorar significativamente a plena carga.</p>
+  </div>
+</section>
+
+<section id="calculadora">
+  <div class="kicker">Calculadora</div>
+  <h2>Clasificación de Severidad</h2>
+  <div class="card">
+    <div class="form-grid">
+      <div class="field"><label for="tg_medida">Temperatura medida (°C)</label><input id="tg_medida" type="number" step="0.1" value="68"></div>
+      <div class="field"><label for="tg_ref">Temperatura de referencia (°C)</label><input id="tg_ref" type="number" step="0.1" value="32"></div>
+      <div class="field"><label for="tg_metodo">Método de referencia</label>
+        <select id="tg_metodo">
+          <option value="similar">Componente similar bajo carga similar</option>
+          <option value="ambiente">Temperatura ambiente</option>
+        </select>
+      </div>
+      <div class="field"><label for="tg_carga">Carga al momento de la medición (%)
+        <span class="hint">Opcional — para extrapolar a plena carga</span></label>
+        <input id="tg_carga" type="number" step="1" min="1" max="100" value="100"></div>
+    </div>
+    <div class="actions-row"><button class="btn primary" onclick="calcTermo()" type="button">Clasificar</button></div>
+    <div class="result-card" id="tg_out" hidden></div>
+    <details class="mi"><summary>Fundamento — corrección por carga</summary>
+      <div class="mi-body">
+        <p>El calentamiento por resistencia (pérdidas I²R) escala aproximadamente con el cuadrado de la corriente. Si la medición se realizó con carga parcial, el ΔT extrapolado a plena carga se estima como:</p>
+        <p style="font-family:var(--mono);font-size:14px">ΔT<sub>100%</sub> ≈ ΔT<sub>medido</sub> × (100 / carga%)²</p>
+        <p>Esta corrección es una aproximación válida principalmente para fallas de tipo resistivo (conexiones flojas, contactos degradados). No aplica igual a mecanismos de falla no resistivos. Úsela como alerta temprana, no como valor de diseño.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section id="galeria">
+  <div class="kicker">Casos ilustrativos</div>
+  <h2>Patrones Típicos de Falla Térmica</h2>
+  <div class="galeria">
+
+    <div class="caso">
+      <svg viewBox="0 0 300 180" role="img" aria-label="Diagrama ilustrativo de conexión floja en un borne de interruptor">
+        <defs>
+          <radialGradient id="g1" cx="68%" cy="45%" r="55%">
+            <stop offset="0%" stop-color="#fff9e0"/><stop offset="18%" stop-color="#ffe27a"/>
+            <stop offset="38%" stop-color="#f2994a"/><stop offset="60%" stop-color="#c0392b"/>
+            <stop offset="80%" stop-color="#5b2a86"/><stop offset="100%" stop-color="#0a0a12"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="180" fill="#0a0a12"/>
+        <rect x="0" y="0" width="300" height="180" fill="url(#g1)"/>
+        <rect x="40" y="60" width="220" height="60" rx="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2"/>
+        <circle cx="205" cy="88" r="7" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+        <circle cx="95" cy="88" r="7" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+      </svg>
+      <div class="cuerpo">
+        <span class="etq">Caso 1 — Borne de interruptor</span>
+        <h4>Conexión floja / oxidada</h4>
+        <p>Punto caliente puntual y bien localizado en un solo borne, mientras el resto del interruptor y los otros bornes permanecen a temperatura normal. Causa típica: torque de apriete insuficiente, oxidación del contacto o terminal mal dimensionado.</p>
+        <p><strong>Acción típica:</strong> desenergizar, limpiar/reapretar según torque de fábrica, o reemplazar el terminal si está degradado.</p>
+        <span class="ilustrativo-tag">Diagrama ilustrativo — no es una foto real</span>
+      </div>
+    </div>
+
+    <div class="caso">
+      <svg viewBox="0 0 300 180" role="img" aria-label="Diagrama ilustrativo de un fusible con sobrecalentamiento distribuido">
+        <defs>
+          <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#0a0a12"/><stop offset="30%" stop-color="#3a2b6d"/>
+            <stop offset="55%" stop-color="#c0392b"/><stop offset="75%" stop-color="#f2994a"/>
+            <stop offset="100%" stop-color="#fff3c4"/>
+          </linearGradient>
+        </defs>
+        <rect width="300" height="180" fill="#0a0a12"/>
+        <rect x="0" y="0" width="300" height="180" fill="url(#g2)" opacity="0.92"/>
+        <rect x="60" y="75" width="180" height="30" rx="15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+      </svg>
+      <div class="cuerpo">
+        <span class="etq">Caso 2 — Portafusibles</span>
+        <h4>Sobrecarga / fusible subdimensionado</h4>
+        <p>Calentamiento distribuido a lo largo de todo el cuerpo del fusible, más intenso hacia un extremo, con un gradiente gradual en vez de un punto único. Sugiere corriente por encima de lo normal de forma sostenida, no una falla de contacto puntual.</p>
+        <p><strong>Acción típica:</strong> verificar corriente real vs. capacidad del fusible/portafusible; revisar dimensionamiento del circuito.</p>
+        <span class="ilustrativo-tag">Diagrama ilustrativo — no es una foto real</span>
+      </div>
+    </div>
+
+    <div class="caso">
+      <svg viewBox="0 0 300 180" role="img" aria-label="Diagrama ilustrativo de desequilibrio de fases en un motor">
+        <rect width="300" height="180" fill="#0a0a12"/>
+        <defs>
+          <radialGradient id="g3a" cx="50%" cy="50%" r="55%">
+            <stop offset="0%" stop-color="#fff3c4"/><stop offset="35%" stop-color="#f2994a"/>
+            <stop offset="65%" stop-color="#8e3b5a"/><stop offset="100%" stop-color="#0a0a12"/>
+          </radialGradient>
+          <radialGradient id="g3b" cx="50%" cy="50%" r="55%">
+            <stop offset="0%" stop-color="#4a3a8f"/><stop offset="60%" stop-color="#1e2a5e"/><stop offset="100%" stop-color="#0a0a12"/>
+          </radialGradient>
+        </defs>
+        <circle cx="90" cy="90" r="55" fill="url(#g3a)"/>
+        <circle cx="160" cy="90" r="55" fill="url(#g3b)"/>
+        <circle cx="230" cy="90" r="55" fill="url(#g3b)"/>
+        <text x="90" y="150" font-size="12" fill="#eaf2f9" text-anchor="middle">A</text>
+        <text x="160" y="150" font-size="12" fill="#eaf2f9" text-anchor="middle">B</text>
+        <text x="230" y="150" font-size="12" fill="#eaf2f9" text-anchor="middle">C</text>
+      </svg>
+      <div class="cuerpo">
+        <span class="etq">Caso 3 — Bornes de motor trifásico</span>
+        <h4>Desbalance de fases</h4>
+        <p>Una fase notoriamente más caliente que las otras dos, con las tres bajo la misma carga nominal aparente. Sugiere desbalance de tensión/corriente entre fases, devanado deteriorado en esa fase, o conexión defectuosa — coincide con lo que muestra el simulador de flujo de potencia trifásico de esta suite.</p>
+        <p><strong>Acción típica:</strong> medir tensión y corriente por fase, calcular el % de desbalance, revisar la fase afectada.</p>
+        <span class="ilustrativo-tag">Diagrama ilustrativo — no es una foto real</span>
+      </div>
+    </div>
+
+    <div class="caso">
+      <svg viewBox="0 0 300 180" role="img" aria-label="Diagrama ilustrativo de un empalme de cable con punto caliente">
+        <rect width="300" height="180" fill="#0a0a12"/>
+        <defs>
+          <radialGradient id="g4" cx="50%" cy="55%" r="40%">
+            <stop offset="0%" stop-color="#ffffff"/><stop offset="15%" stop-color="#fff3c4"/>
+            <stop offset="35%" stop-color="#f2994a"/><stop offset="58%" stop-color="#c0392b"/>
+            <stop offset="80%" stop-color="#3a2b6d"/><stop offset="100%" stop-color="#0a0a12"/>
+          </radialGradient>
+        </defs>
+        <line x1="20" y1="90" x2="280" y2="90" stroke="rgba(255,255,255,.25)" stroke-width="10" stroke-linecap="round"/>
+        <rect x="0" y="0" width="300" height="180" fill="url(#g4)"/>
+      </svg>
+      <div class="cuerpo">
+        <span class="etq">Caso 4 — Empalme de cable</span>
+        <h4>Punto caliente crítico en unión</h4>
+        <p>Punto extremadamente localizado y de alta intensidad sobre una unión o empalme, muy por encima del resto del conductor. Patrón típico de una conexión con resistencia de contacto muy elevada, cercana a la falla.</p>
+        <p><strong>Acción típica:</strong> ΔT en este rango suele caer en la banda crítica — desenergizar y reparar de inmediato, riesgo de falla o incendio.</p>
+        <span class="ilustrativo-tag">Diagrama ilustrativo — no es una foto real</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 <strong>Ingeniero Darío Cornuz</strong> · Suite Eléctrica — Termografía Guiada</span>
+    <span class="ver">Versión 1.0 · GitHub Pages · Sin servidores ni bases de datos externas</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+function clasificar(dt){
+  if(dt < 1) return {clase:'Sin anomalía significativa', accion:'Ninguna acción — condición normal', color:'#8fb2d1', estado:''};
+  if(dt <= 3) return {clase:'Posible deficiencia', accion:'Incluir en la próxima inspección de rutina', color:'#1e8a4c', estado:'ok'};
+  if(dt <= 15) return {clase:'Deficiencia probable', accion:'Reparar cuando lo permita la programación', color:'#c99400', estado:''};
+  if(dt <= 40) return {clase:'Deficiencia mayor', accion:'Reparar lo antes posible', color:'#d96c1e', estado:'crit'};
+  return {clase:'Deficiencia crítica', accion:'Reparar de inmediato — riesgo de falla', color:'#c22f3d', estado:'crit'};
+}
+
+function calcTermo(){
+  const tMed = Number($('tg_medida').value) || 0;
+  const tRef = Number($('tg_ref').value) || 0;
+  const carga = Math.min(Math.max(Number($('tg_carga').value) || 100, 1), 100);
+  const dt = tMed - tRef;
+  const c = clasificar(dt);
+
+  const out = $('tg_out');
+  out.hidden = false;
+  let extra = '';
+  if(carga < 100){
+    const dtExtrap = dt * Math.pow(100/carga, 2);
+    const cExtrap = clasificar(dtExtrap);
+    extra = `<div class="rc-row"><span class="k">ΔT extrapolado a 100% carga</span><span class="v">${dtExtrap.toFixed(1)} °C — ${cExtrap.clase}</span></div>`;
+  }
+
+  out.innerHTML = `
+    <div class="rc-kicker">Clasificación de severidad</div>
+    <div class="rc-val">${dt.toFixed(1)}<small>°C ΔT</small></div>
+    <div class="rc-sub">${c.clase}</div>
+    <div class="rc-row"><span class="k">Acción recomendada</span><span class="v">${c.accion}</span></div>
+    <div class="rc-row"><span class="k">Carga al momento de la medición</span><span class="v">${carga}%</span></div>
+    ${extra}
+    ${c.estado ? `<div class="rc-estado ${c.estado}">${c.clase}</div>` : ''}`;
+}
+calcTermo();
+</script>
+</body>
+</html>

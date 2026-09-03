@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Flujo de Potencia Trifásico</title>
+<meta name="description" content="Simulador educativo de flujo de potencia trifásico: fasores de tensión y corriente, corriente de neutro, desbalance por componentes simétricas, efecto de armónicos. Ingeniero Darío Cornuz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3;--panel:#ffffff;--panel-alt:#f6f8fa;--ink:#17242f;--muted:#5b6a79;
+  --navy:#0d2b45;--navy-2:#123a5c;--blue:#1a5fa8;--line:#d5dde5;
+  --ok:#1e8a4c;--warn:#c99400;--high:#d96c1e;--crit:#c22f3d;--amber:#b8860b;--purple:#6c5aa8;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,Segoe UI,Arial,sans-serif;
+  --disp:'Barlow Condensed','IBM Plex Sans',sans-serif;
+  --radius:10px;--shadow:0 1px 2px rgba(13,43,69,.06),0 4px 14px rgba(13,43,69,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+.topbar{background:var(--navy);color:#fff;position:relative}
+.topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--blue) 25% 50%,var(--amber) 50% 75%,var(--crit) 75% 100%)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.6vw,30px);letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
+.brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
+.brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
+.top-actions{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.btn{font:600 12px var(--sans);padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
+.btn:hover{background:#f0f4f8}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+section{margin-bottom:34px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin:0 0 4px}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px;color:var(--navy)}
+h3{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;color:var(--navy-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.aviso{background:#fdf6df;border:1px solid #ecd98a;border-left:5px solid var(--amber);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;color:#5c4a08;line-height:1.6}
+.aviso strong{color:#3d3005}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px 12px}
+.field label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;margin-bottom:4px}
+.field input,.field select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:400 14px var(--sans);color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+.fase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.fase-box{border-radius:var(--radius);padding:12px 14px;background:var(--panel-alt);border:1px solid var(--line);border-top:4px solid var(--blue)}
+.fase-box.B{border-top-color:var(--amber)}
+.fase-box.C{border-top-color:var(--purple)}
+.fase-box h4{margin:0 0 8px;font-family:var(--disp);font-size:16px;letter-spacing:.04em}
+.actions-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.sim-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:start;margin-top:18px}
+#fasorSVG{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend .lg{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:13px;height:13px;border-radius:3px}
+.result-card{background:var(--navy);color:#eaf2f9;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.result-card .rc-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fb2d1;margin-bottom:10px}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid rgba(255,255,255,.14);font-size:13.5px}
+.rc-row .k{color:#9db8cf;text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-family:var(--mono)}
+.rc-row .v{font-weight:600;text-align:right}
+.rc-estado{margin-top:12px;font-family:var(--mono);font-weight:600;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;border-radius:7px;background:rgba(255,255,255,.1);text-align:center}
+.rc-estado.ok{background:rgba(30,138,76,.28)}
+.rc-estado.crit{background:rgba(194,47,61,.32)}
+#armSVG{width:100%;height:auto;display:block;margin-top:10px}
+details.mi{margin:16px 0 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-alt);font-size:13.5px;color:var(--ink)}
+details.mi summary{cursor:pointer;padding:10px 14px;font-weight:600;color:var(--blue);font-size:13px;user-select:none;list-style:none}
+details.mi summary::before{content:'§  ';font-weight:400}
+details.mi summary::-webkit-details-marker{display:none}
+details.mi[open] summary{border-bottom:1px solid var(--line)}
+details.mi .mi-body{padding:12px 14px 14px;line-height:1.6}
+details.mi .mi-body p{margin:0 0 8px}
+footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
+.foot-inner{max-width:1180px;margin:0 auto;padding:26px 22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.foot-inner .ver{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8fb2d1}
+.foot-inner strong{color:#fff}
+@media (max-width:900px){.sim-grid{grid-template-columns:1fr}}
+@media print{.topbar .top-actions,.btn{display:none!important}body{background:#fff}.card,.result-card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><path d="M17 2 6 17h8l-3 11 13-17h-8z" fill="#f2c94c"/></svg>
+    </div>
+    <div class="brand">
+      <h1>Flujo de Potencia Trifásico</h1>
+      <p class="sub">Fasores, corriente de neutro, desbalance por componentes simétricas y efecto de armónicos</p>
+      <p class="autor">Ingeniero Darío Cornuz</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">DGA</a>
+      <a class="btn ghost" href="calculadora-ric.html">RIC</a>
+      <a class="btn ghost" href="calculadora-nec.html">NEC</a>
+      <a class="btn ghost" href="curvas-proteccion.html">Curvas</a>
+      <a class="btn ghost" href="checklist-nfpa70e.html">Checklist</a>
+      <a class="btn ghost" href="calidad-energia.html">Calidad de Energía</a>
+      <a class="btn ghost" href="termografia-guiada.html">Termografía</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="aviso">
+  <div class="aviso">
+    <strong>Herramienta educativa de estimación.</strong> Este simulador modela tres cargas monofásicas conectadas a una fuente trifásica <strong>balanceada</strong> (asume que la tensión de la fuente no varía con la carga), calcula la corriente de cada fase a partir de su potencia y factor de potencia, y obtiene el desbalance mediante componentes simétricas (I₁, I₂). No es un flujo de potencia completo de red (no modela impedancias de línea, caídas de tensión resultantes ni múltiples buses) — para eso se requiere software de análisis de sistemas de potencia. Útil para visualizar rápidamente el efecto de cargas desbalanceadas y de distorsión armónica sobre la corriente de neutro.
+  </div>
+</section>
+
+<section id="sim">
+  <div class="kicker">Simulador</div>
+  <h2>Cargas por Fase y Corriente de Neutro</h2>
+  <div class="card">
+    <div class="form-grid" style="margin-bottom:16px">
+      <div class="field"><label for="fp_vl">Tensión de línea (V)</label><input id="fp_vl" type="number" step="1" value="380"></div>
+    </div>
+    <div class="fase-grid">
+      <div class="fase-box A">
+        <h4 style="color:var(--blue)">Fase A</h4>
+        <div class="form-grid">
+          <div class="field"><label for="pa">P (kW)</label><input id="pa" type="number" step="0.1" value="10"></div>
+          <div class="field"><label for="fa">cos φ</label><input id="fa" type="number" step="0.01" min="0.1" max="1" value="0.9"></div>
+        </div>
+      </div>
+      <div class="fase-box B">
+        <h4 style="color:var(--amber)">Fase B</h4>
+        <div class="form-grid">
+          <div class="field"><label for="pb">P (kW)</label><input id="pb" type="number" step="0.1" value="10"></div>
+          <div class="field"><label for="fb">cos φ</label><input id="fb" type="number" step="0.01" min="0.1" max="1" value="0.9"></div>
+        </div>
+      </div>
+      <div class="fase-box C">
+        <h4 style="color:var(--purple)">Fase C</h4>
+        <div class="form-grid">
+          <div class="field"><label for="pc">P (kW)</label><input id="pc" type="number" step="0.1" value="4"></div>
+          <div class="field"><label for="fc">cos φ</label><input id="fc" type="number" step="0.01" min="0.1" max="1" value="0.85"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:15px;margin-top:22px">Armónicos en la corriente (opcional — fase A, % de la fundamental)</h3>
+    <div class="form-grid">
+      <div class="field"><label for="h3">3.º armónico</label><input id="h3" type="number" step="1" min="0" value="0"></div>
+      <div class="field"><label for="h5">5.º armónico</label><input id="h5" type="number" step="1" min="0" value="0"></div>
+      <div class="field"><label for="h7">7.º armónico</label><input id="h7" type="number" step="1" min="0" value="0"></div>
+    </div>
+
+    <div class="actions-row"><button class="btn primary" onclick="simular()" type="button">Simular flujo</button></div>
+
+    <div class="sim-grid">
+      <div>
+        <svg id="fasorSVG" viewBox="0 0 420 420" role="img" aria-label="Diagrama fasorial de tensiones y corrientes por fase"></svg>
+        <div class="legend">
+          <span class="lg"><span class="sw" style="background:var(--blue)"></span> Fase A</span>
+          <span class="lg"><span class="sw" style="background:var(--amber)"></span> Fase B</span>
+          <span class="lg"><span class="sw" style="background:var(--purple)"></span> Fase C</span>
+          <span class="lg"><span class="sw" style="background:var(--crit)"></span> Neutro</span>
+        </div>
+        <svg id="armSVG" viewBox="0 0 420 160" role="img" aria-label="Forma de onda de corriente de fase A con armónicos"></svg>
+      </div>
+      <div class="result-card" id="fp_out"></div>
+    </div>
+
+    <details class="mi"><summary>Fundamento</summary>
+      <div class="mi-body">
+        <p>Corriente por fase: I = P / (V<sub>fase</sub> · cos φ), con ángulo = ángulo de tensión − φ (carga inductiva, corriente en atraso). V<sub>fase</sub> = V<sub>línea</sub> / √3, secuencia ABC (0°, −120°, +120°).</p>
+        <p>Corriente de neutro: suma fasorial I_A + I_B + I_C.</p>
+        <p>Desbalance por componentes simétricas: I₁ (secuencia positiva) = ⅓(I_A + a·I_B + a²·I_C), I₂ (secuencia negativa) = ⅓(I_A + a²·I_B + a·I_C), con a = 1∠120°. Factor de desbalance = |I₂|/|I₁| × 100 % — definición estándar IEEE/NEMA, más rigurosa que comparar solo magnitudes.</p>
+        <p>THD de corriente (fase A) = √(3.º%² + 5.º%² + 7.º%²) sobre la fundamental.</p>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 <strong>Ingeniero Darío Cornuz</strong> · Suite Eléctrica — Flujo de Potencia Trifásico</span>
+    <span class="ver">Versión 1.0 · GitHub Pages · Sin servidores ni bases de datos externas</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* ===== Aritmética compleja mínima ===== */
+const cx = (re, im) => ({re, im});
+const cxAdd = (a,b) => cx(a.re+b.re, a.im+b.im);
+const cxMul = (a,b) => cx(a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re);
+const cxScale = (a,k) => cx(a.re*k, a.im*k);
+const cxFromPolar = (mag, angDeg) => { const r = angDeg*Math.PI/180; return cx(mag*Math.cos(r), mag*Math.sin(r)); };
+const cxMag = a => Math.hypot(a.re, a.im);
+const cxAngle = a => Math.atan2(a.im, a.re) * 180/Math.PI;
+const A_OP = cxFromPolar(1,120), A2_OP = cxFromPolar(1,240);
+
+function dibujarFasores(vFase, corrientes, iN){
+  const svg = $('fasorSVG');
+  const cx0 = 210, cy0 = 210, rMax = 160;
+  const imax = Math.max(...corrientes.map(c => cxMag(c.I)), cxMag(iN), 0.001);
+  let el = `<circle cx="${cx0}" cy="${cy0}" r="${rMax}" fill="none" stroke="#e3e8ee" stroke-width="1"/>`;
+  el += `<circle cx="${cx0}" cy="${cy0}" r="${rMax*0.5}" fill="none" stroke="#e3e8ee" stroke-width="1"/>`;
+  el += `<line x1="${cx0-rMax-10}" y1="${cy0}" x2="${cx0+rMax+10}" y2="${cy0}" stroke="#e3e8ee"/>`;
+  el += `<line x1="${cx0}" y1="${cy0-rMax-10}" x2="${cx0}" y2="${cy0+rMax+10}" stroke="#e3e8ee"/>`;
+
+  const colores = {A:'#1a5fa8', B:'#b8860b', C:'#6c5aa8'};
+  const angV = {A:0, B:-120, C:120};
+  ['A','B','C'].forEach(f => {
+    const vx = cx0 + Math.cos(angV[f]*Math.PI/180) * rMax * 0.55;
+    const vy = cy0 - Math.sin(angV[f]*Math.PI/180) * rMax * 0.55;
+    el += `<line x1="${cx0}" y1="${cy0}" x2="${vx.toFixed(1)}" y2="${vy.toFixed(1)}" stroke="${colores[f]}" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.55"/>`;
+  });
+  corrientes.forEach(c => {
+    const mag = (cxMag(c.I) / imax) * rMax;
+    const ang = cxAngle(c.I);
+    const x = cx0 + Math.cos(ang*Math.PI/180) * mag;
+    const y = cy0 - Math.sin(ang*Math.PI/180) * mag;
+    el += `<line x1="${cx0}" y1="${cy0}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${colores[c.f]}" stroke-width="3.5" marker-end="url(#arrow${c.f})"/>`;
+    el += `<defs><marker id="arrow${c.f}" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="${colores[c.f]}"/></marker></defs>`;
+  });
+  if(cxMag(iN) > 0.01){
+    const mag = (cxMag(iN) / imax) * rMax;
+    const ang = cxAngle(iN);
+    const x = cx0 + Math.cos(ang*Math.PI/180) * mag;
+    const y = cy0 - Math.sin(ang*Math.PI/180) * mag;
+    el += `<line x1="${cx0}" y1="${cy0}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#c22f3d" stroke-width="3" stroke-dasharray="2,3"/>`;
+    el += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#c22f3d"/>`;
+  }
+  svg.innerHTML = el;
+}
+
+function dibujarOnda(i1, h3pct, h5pct, h7pct){
+  const svg = $('armSVG');
+  const w = 420, h = 160, midY = 80, amp = 60;
+  let d = '';
+  const n = 200;
+  for(let j = 0; j <= n; j++){
+    const t = (j/n) * 2 * Math.PI;
+    const y = Math.sin(t) + (h3pct/100)*Math.sin(3*t) + (h5pct/100)*Math.sin(5*t) + (h7pct/100)*Math.sin(7*t);
+    const px = (j/n) * w;
+    const py = midY - y * amp * 0.7;
+    d += (j===0 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1) + ' ';
+  }
+  let dRef = '';
+  for(let j = 0; j <= n; j++){
+    const t = (j/n) * 2 * Math.PI;
+    const px = (j/n) * w, py = midY - Math.sin(t) * amp * 0.7;
+    dRef += (j===0 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1) + ' ';
+  }
+  svg.innerHTML = `
+    <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" stroke="#e3e8ee"/>
+    <path d="${dRef}" fill="none" stroke="#b9c5d1" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <path d="${d}" fill="none" stroke="#1a5fa8" stroke-width="2.2"/>
+    <text x="6" y="14" font-size="11" fill="#5b6a79">Corriente fase A — distorsionada (azul) vs. fundamental (gris)</text>`;
+}
+
+function simular(){
+  const vLinea = Number($('fp_vl').value) || 380;
+  const vFase = vLinea / Math.sqrt(3);
+  const angV = {A:0, B:-120, C:120};
+  const datos = {
+    A: {p:Number($('pa').value)||0, cosf:Number($('fa').value)||1},
+    B: {p:Number($('pb').value)||0, cosf:Number($('fb').value)||1},
+    C: {p:Number($('pc').value)||0, cosf:Number($('fc').value)||1}
+  };
+  const corrientes = ['A','B','C'].map(f => {
+    const {p, cosf} = datos[f];
+    const mag = (p*1000) / (vFase * Math.max(cosf,0.01));
+    const phi = Math.acos(Math.min(Math.max(cosf,0.01),1)) * 180/Math.PI;
+    const I = cxFromPolar(mag, angV[f] - phi);
+    return {f, I, mag};
+  });
+
+  const Ia = corrientes[0].I, Ib = corrientes[1].I, Ic = corrientes[2].I;
+  const iN = cxAdd(cxAdd(Ia, Ib), Ic);
+  const I1 = cxScale(cxAdd(cxAdd(Ia, cxMul(A_OP, Ib)), cxMul(A2_OP, Ic)), 1/3);
+  const I2 = cxScale(cxAdd(cxAdd(Ia, cxMul(A2_OP, Ib)), cxMul(A_OP, Ic)), 1/3);
+  const desbalance = cxMag(I1) > 0.001 ? (cxMag(I2)/cxMag(I1))*100 : 0;
+
+  const h3 = Number($('h3').value)||0, h5 = Number($('h5').value)||0, h7 = Number($('h7').value)||0;
+  const thd = Math.sqrt(h3*h3 + h5*h5 + h7*h7);
+
+  const pTotal = datos.A.p + datos.B.p + datos.C.p;
+
+  dibujarFasores(vFase, corrientes, iN);
+  dibujarOnda(corrientes[0].mag, h3, h5, h7);
+
+  const out = $('fp_out');
+  out.innerHTML = `
+    <div class="rc-kicker">Resultado</div>
+    <div class="rc-row"><span class="k">I fase A</span><span class="v">${corrientes[0].mag.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">I fase B</span><span class="v">${corrientes[1].mag.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">I fase C</span><span class="v">${corrientes[2].mag.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Corriente de neutro</span><span class="v">${cxMag(iN).toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Potencia total</span><span class="v">${pTotal.toFixed(1)} kW</span></div>
+    <div class="rc-row"><span class="k">Desbalance (|I₂|/|I₁|)</span><span class="v">${desbalance.toFixed(2)} %</span></div>
+    <div class="rc-row"><span class="k">THD corriente fase A (estimado)</span><span class="v">${thd.toFixed(1)} %</span></div>
+    <div class="rc-estado ${desbalance <= 5 ? 'ok' : 'crit'}">${desbalance <= 5 ? 'Desbalance dentro de referencia habitual (≤5%)' : 'Desbalance elevado — revisar distribución de cargas'}</div>`;
+}
+
+simular();
+</script>
+</body>
+</html>
