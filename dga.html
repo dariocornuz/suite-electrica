@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Diagnóstico DGA — Transformadores de Potencia</title>
+<meta name="description" content="Sistema profesional de diagnóstico por análisis de gases disueltos (DGA) para transformadores de potencia. Triángulo de Duval 1, TDCG, relación CO2/CO. Ingeniero Darío Cornuz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3;
+  --panel:#ffffff;
+  --panel-alt:#f6f8fa;
+  --ink:#17242f;
+  --muted:#5b6a79;
+  --navy:#0d2b45;
+  --navy-2:#123a5c;
+  --blue:#1a5fa8;
+  --line:#d5dde5;
+  --ok:#1e8a4c;
+  --warn:#c99400;
+  --high:#d96c1e;
+  --crit:#c22f3d;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,Segoe UI,Arial,sans-serif;
+  --disp:'Barlow Condensed','IBM Plex Sans',sans-serif;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(13,43,69,.06),0 4px 14px rgba(13,43,69,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+
+/* ===== Encabezado ===== */
+.topbar{background:var(--navy);color:#fff;position:relative}
+.topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--warn) 25% 50%,var(--high) 50% 75%,var(--crit) 75% 100%)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center;text-decoration:none;transition:background .15s,border-color .15s}
+.brand-mark:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.6)}
+.brand-mark svg{display:block}
+.brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(24px,4vw,34px);letter-spacing:.06em;text-transform:uppercase;line-height:1.05}
+.brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
+.brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
+.top-actions{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:600 13.5px var(--sans);padding:9px 15px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
+.btn:hover{background:#f0f4f8}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#134d8a}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+.btn.danger{color:var(--crit);border-color:#e4bcc1}
+.btn.danger:hover{background:#fbf0f1}
+
+/* ===== Estructura ===== */
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+section{margin-bottom:34px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin:0 0 4px}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px;color:var(--navy)}
+h3{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;color:var(--navy-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+
+/* ===== Formularios ===== */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:400 14px var(--sans);color:var(--ink);background:#fff}
+.field textarea{resize:vertical;min-height:60px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+details.card{padding:0;overflow:hidden}
+details.card summary{cursor:pointer;list-style:none;padding:16px 20px;display:flex;align-items:center;gap:10px;font-family:var(--disp);font-size:19px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--navy-2)}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary .chev{margin-left:auto;transition:transform .2s;color:var(--muted)}
+details[open].card summary .chev{transform:rotate(180deg)}
+details.card .inner{padding:4px 20px 20px}
+
+/* ===== Entradas de gases ===== */
+.gas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.gas{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)}
+.gas .formula{font-family:var(--mono);font-weight:600;font-size:16px;color:var(--navy)}
+.gas .nombre{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:1px 0 8px}
+.gas .in{display:flex;align-items:center;gap:6px}
+.gas input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:500 15px var(--mono);text-align:right;color:var(--ink)}
+.gas input:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+.gas .unidad{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.gas.tdcg-si{border-left:4px solid var(--blue)}
+.nota{font-size:12.5px;color:var(--muted);margin-top:10px}
+.nota .dot{display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--blue);margin-right:5px;vertical-align:baseline}
+
+/* ===== Indicadores ===== */
+.ind-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+.big-val{font-family:var(--mono);font-weight:600;font-size:clamp(30px,4vw,42px);line-height:1.1;color:var(--navy)}
+.big-val small{font-size:.45em;font-weight:500;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 12.5px var(--sans);letter-spacing:.03em;padding:4px 11px;border-radius:999px;border:1px solid transparent;text-transform:uppercase}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.chip.ok{color:var(--ok);background:#e8f5ed;border-color:#bfe3cc}
+.chip.warn{color:#8a6a00;background:#fdf6df;border-color:#ecd98a}
+.chip.high{color:#9c4a10;background:#fdeee0;border-color:#f2c9a3}
+.chip.crit{color:var(--crit);background:#fbebed;border-color:#eec0c6}
+.chip.na{color:var(--muted);background:#eef1f4;border-color:#d8dee4}
+.ind-desc{font-size:13.5px;color:var(--muted);margin-top:10px}
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+table.tbl th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:2px solid var(--line)}
+table.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl td.num{font-family:var(--mono);text-align:right}
+table.tbl tr:last-child td{border-bottom:none}
+.tbl-wrap{overflow-x:auto}
+
+/* ===== Duval ===== */
+.duval-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+#duvalSVG{width:100%;height:auto;display:block}
+.duval-pcts{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.pct{font-family:var(--mono);font-size:13px;background:var(--panel-alt);border:1px solid var(--line);border-radius:7px;padding:5px 10px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.legend .lg{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(13,43,69,.25)}
+
+/* ===== Tarjeta de resultado ===== */
+.result-card{background:var(--navy);color:#eaf2f9;border-radius:var(--radius);padding:22px;border-left:6px solid var(--crit);box-shadow:var(--shadow)}
+.result-card .rc-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fb2d1;margin-bottom:12px}
+.result-card .rc-zona{font-family:var(--disp);font-weight:700;font-size:52px;line-height:1;letter-spacing:.03em}
+.result-card .rc-clasif{font-size:16px;font-weight:600;margin:6px 0 16px}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.14);font-size:13.5px}
+.rc-row .k{color:#9db8cf;text-transform:uppercase;letter-spacing:.08em;font-size:11.5px;font-family:var(--mono)}
+.rc-row .v{font-weight:600;text-align:right}
+.rc-estado{margin-top:14px;font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;border-radius:7px;background:rgba(255,255,255,.1);text-align:center}
+.interp{font-size:14.5px;line-height:1.65}
+.interp p{margin:0 0 10px}
+ul.reco{margin:8px 0 0;padding:0;list-style:none}
+ul.reco li{padding:9px 0 9px 26px;border-bottom:1px solid var(--line);position:relative;font-size:14px}
+ul.reco li:last-child{border-bottom:none}
+ul.reco li::before{content:"";position:absolute;left:4px;top:15px;width:9px;height:9px;border-radius:2px;background:var(--blue)}
+
+/* ===== Relaciones IEC ===== */
+.ratio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ratio-box{background:var(--panel-alt);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.ratio-box .rk{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.ratio-box .rv{font-family:var(--mono);font-weight:600;font-size:clamp(20px,2.6vw,28px);color:var(--navy)}
+#iecTabla tr.activa td{background:#eaf2fb}
+#iecTabla tr.activa td:first-child{box-shadow:inset 4px 0 0 var(--blue)}
+@media (max-width:640px){.ratio-grid{grid-template-columns:1fr}}
+
+/* ===== Key Gas ===== */
+.kg-bars{margin-top:12px}
+.kg-row{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:10px;margin-bottom:7px}
+.kg-row .kg-gas{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--navy)}
+.kg-row .kg-val{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.kg-track{height:14px;background:var(--panel-alt);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.kg-fill{height:100%;background:var(--blue);border-radius:3px;transition:width .2s}
+.kg-row.destacado .kg-fill{background:var(--crit)}
+.kg-row.destacado .kg-gas{color:var(--crit)}
+
+/* ===== Triángulos complementarios ===== */
+.tri-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.tri-card svg{width:100%;height:auto;display:block}
+.tri-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.tri-res{font-size:13.5px;margin-top:10px;color:var(--muted)}
+.tri-res strong{color:var(--ink)}
+@media (max-width:900px){.tri-grid{grid-template-columns:1fr}}
+
+/* ===== Key Gas y Duval 4/5 ===== */
+.kg-row{display:grid;grid-template-columns:64px 1fr 74px;align-items:center;gap:10px;margin:7px 0}
+.kg-row .kg-g{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--navy)}
+.kg-row .kg-track{background:var(--panel-alt);border:1px solid var(--line);border-radius:6px;height:18px;overflow:hidden}
+.kg-row .kg-fill{height:100%;background:var(--blue);border-radius:5px 0 0 5px;transition:width .25s}
+.kg-row .kg-v{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--muted)}
+.na-overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(246,248,250,.82);border-radius:8px;text-align:center}
+.na-overlay span{font-family:var(--mono);font-weight:600;letter-spacing:.14em;color:var(--muted);font-size:14px}
+.na-overlay small{color:var(--muted);font-size:12px;margin-top:6px;max-width:80%}
+.na-overlay.visible{display:flex}
+#duval4SVG,#duval5SVG{width:100%;height:auto;display:block}
+#rrTabla tr.activa td,#kgTabla tr.activa td{background:#eaf2fb}
+#rrTabla tr.activa td:first-child,#kgTabla tr.activa td:first-child{box-shadow:inset 4px 0 0 var(--blue)}
+
+/* ===== Fisicoquímicos ===== */
+.gas.fq{border-top:3px solid #6c5aa8}
+.gas.fq .nombre{font-size:10.5px;letter-spacing:.02em}
+.fq-item{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.fq-item:last-child{border-bottom:none}
+.fq-item .fq-n{min-width:190px;font-weight:600;color:var(--navy)}
+.fq-item .fq-v{font-family:var(--mono);min-width:130px}
+.fq-item.mal .fq-v{color:var(--crit);font-weight:600}
+.fq-item.bien .fq-v{color:var(--ok)}
+
+/* ===== Explicaciones de método ===== */
+details.mi{margin:2px 0 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-alt);font-size:13.5px;color:var(--ink)}
+details.mi summary{cursor:pointer;padding:8px 14px;font-weight:600;color:var(--blue);font-size:13px;user-select:none;list-style:none}
+details.mi summary::before{content:'ⓘ  ';font-weight:400}
+details.mi summary::-webkit-details-marker{display:none}
+details.mi[open] summary{border-bottom:1px solid var(--line)}
+details.mi .mi-body{padding:10px 14px 12px;line-height:1.55}
+details.mi .mi-body p{margin:0 0 8px}
+details.mi .mi-body p:last-child{margin:0}
+
+/* ===== Historial ===== */
+.hist-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.hist-actions .sp{flex:1}
+#tendenciaWrap{margin-top:16px}
+.badge-trend{font:600 12.5px var(--sans);padding:4px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em}
+.badge-trend.up{color:var(--crit);background:#fbebed;border:1px solid #eec0c6}
+.badge-trend.flat{color:var(--ok);background:#e8f5ed;border:1px solid #bfe3cc}
+.mini-chip{font:600 11px var(--mono);padding:2px 8px;border-radius:6px;letter-spacing:.04em}
+.mini-chip.z-PD{background:#dceefb;color:#155a8a}.mini-chip.z-D1{background:#dbe8f6;color:#1d4f86}
+.mini-chip.z-D2{background:#d3e0ef;color:#123a68}.mini-chip.z-DT{background:#e6def2;color:#4d3577}
+.mini-chip.z-T1{background:#fcefdb;color:#8a5a10}.mini-chip.z-T2{background:#fae4c8;color:#8a4b0a}
+.mini-chip.z-T3{background:#f3d9c2;color:#6e3608}
+.vacio{color:var(--muted);font-size:13.5px;padding:14px 4px}
+
+/* ===== Métodos futuros ===== */
+.fut-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.fut{background:var(--panel);border:1px dashed #b9c5d1;border-radius:var(--radius);padding:16px}
+.fut h4{margin:0 0 4px;font-family:var(--disp);font-size:17px;letter-spacing:.04em;text-transform:uppercase;color:var(--navy-2)}
+.fut p{margin:0 0 10px;font-size:12.5px;color:var(--muted)}
+.fut .tag{font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#7a8894;background:#eef1f4;padding:3px 8px;border-radius:5px}
+
+/* ===== Pie ===== */
+footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
+.foot-inner{max-width:1180px;margin:0 auto;padding:26px 22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.foot-inner .ver{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8fb2d1}
+.foot-inner strong{color:#fff}
+
+@media (max-width:900px){
+  .ind-grid,.duval-grid{grid-template-columns:1fr}
+  .result-card .rc-zona{font-size:42px}
+}
+@media print{
+  .topbar .top-actions,.hist-actions,#futuros,.btn{display:none!important}
+  body{background:#fff}
+  .card,.result-card{box-shadow:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<!-- ================= ENCABEZADO ================= -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand-mark" href="index.html" aria-label="Volver al inicio" title="Volver al inicio">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <polygon points="15,3 27,25 3,25" stroke="#fff" stroke-width="2" fill="none"/>
+        <circle cx="17" cy="18" r="3" fill="#f2c94c"/>
+      </svg>
+    </a>
+    <div class="brand">
+      <h1>Sistema de Diagnóstico DGA</h1>
+      <p class="sub">Análisis Cromatográfico para Transformadores de Potencia</p>
+      <p class="autor">Ingeniero Darío Cornuz</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="calculadora-ric.html">RIC</a>
+      <a class="btn ghost" href="calculadora-nec.html">NEC</a>
+      <a class="btn ghost" href="curvas-proteccion.html">Curvas</a>
+      <a class="btn ghost" href="checklist-nfpa70e.html">Checklist</a>
+      <a class="btn ghost" href="flujo-potencia.html">Flujo de Potencia</a>
+      <a class="btn ghost" href="calidad-energia.html">Calidad de Energía</a>
+      <a class="btn ghost" href="termografia-guiada.html">Termografía</a>
+      <button class="btn ghost" onclick="window.print()" type="button">Imprimir informe</button>
+      <button class="btn ghost" onclick="cargarEjemplo()" type="button">Cargar ejemplo</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= INFORMACIÓN DEL TRANSFORMADOR ================= -->
+<section id="info">
+  <p class="kicker">Identificación general</p>
+  <h2>Información del Transformador</h2>
+  <details class="card" open>
+    <summary>Datos del equipo y del muestreo
+      <span class="chev" aria-hidden="true">▾</span>
+    </summary>
+    <div class="inner">
+      <div class="form-grid">
+        <div class="field"><label for="f_empresa">Empresa</label><input id="f_empresa" type="text"></div>
+        <div class="field"><label for="f_instalacion">Instalación</label><input id="f_instalacion" type="text"></div>
+        <div class="field"><label for="f_subestacion">Subestación</label><input id="f_subestacion" type="text"></div>
+        <div class="field"><label for="f_trafo">Transformador</label><input id="f_trafo" type="text" placeholder="TAG / identificador"></div>
+        <div class="field"><label for="f_fabricante">Fabricante</label><input id="f_fabricante" type="text"></div>
+        <div class="field"><label for="f_modelo">Modelo</label><input id="f_modelo" type="text"></div>
+        <div class="field"><label for="f_serie">Número de serie</label><input id="f_serie" type="text"></div>
+        <div class="field"><label for="f_anio">Año de fabricación</label><input id="f_anio" type="number" min="1900" max="2100"></div>
+        <div class="field"><label for="f_mva">Potencia nominal (MVA)</label><input id="f_mva" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="f_kv1">Tensión primaria (kV)</label><input id="f_kv1" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="f_kv2">Tensión secundaria (kV)</label><input id="f_kv2" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="f_fmuestreo">Fecha de muestreo</label><input id="f_fmuestreo" type="date"></div>
+        <div class="field"><label for="f_fanalisis">Fecha de análisis</label><input id="f_fanalisis" type="date"></div>
+        <div class="field"><label for="f_lab">Laboratorio</label><input id="f_lab" type="text"></div>
+        <div class="field"><label for="f_informe">Número de informe</label><input id="f_informe" type="text"></div>
+        <div class="field"><label for="f_resp">Responsable</label><input id="f_resp" type="text"></div>
+        <div class="field" style="grid-column:1/-1"><label for="f_obs">Observaciones</label><textarea id="f_obs"></textarea></div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- ================= MÓDULO CROMATOGRAFÍA ================= -->
+<section id="cromatografia">
+  <p class="kicker">Ingreso manual de resultados cromatográficos</p>
+  <h2>Módulo Cromatografía DGA</h2>
+  <div class="gas-grid" id="gasGrid">
+    <div class="gas tdcg-si"><div class="formula">H₂</div><div class="nombre">Hidrógeno</div>
+      <div class="in"><input id="g_h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Hidrógeno en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas tdcg-si"><div class="formula">CH₄</div><div class="nombre">Metano</div>
+      <div class="in"><input id="g_ch4" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Metano en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas tdcg-si"><div class="formula">C₂H₆</div><div class="nombre">Etano</div>
+      <div class="in"><input id="g_c2h6" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Etano en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas tdcg-si"><div class="formula">C₂H₄</div><div class="nombre">Etileno</div>
+      <div class="in"><input id="g_c2h4" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Etileno en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas tdcg-si"><div class="formula">C₂H₂</div><div class="nombre">Acetileno</div>
+      <div class="in"><input id="g_c2h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Acetileno en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas tdcg-si"><div class="formula">CO</div><div class="nombre">Monóxido de carbono</div>
+      <div class="in"><input id="g_co" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Monóxido de carbono en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas"><div class="formula">CO₂</div><div class="nombre">Dióxido de carbono</div>
+      <div class="in"><input id="g_co2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Dióxido de carbono en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas"><div class="formula">O₂</div><div class="nombre">Oxígeno</div>
+      <div class="in"><input id="g_o2" type="number" min="0" step="1" inputmode="decimal" value="0" aria-label="Oxígeno en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas"><div class="formula">N₂</div><div class="nombre">Nitrógeno</div>
+      <div class="in"><input id="g_n2" type="number" min="0" step="1" inputmode="decimal" value="0" aria-label="Nitrógeno en ppm"><span class="unidad">ppm</span></div></div>
+  </div>
+  <p class="nota"><span class="dot"></span>Los gases marcados con borde azul componen el TDCG. Unidad de trabajo: <strong>ppm</strong> (µL/L). Los cálculos se actualizan en tiempo real.</p>
+</section>
+
+<!-- ================= FISICOQUÍMICOS DEL ACEITE ================= -->
+<section id="fisicoquimicos">
+  <p class="kicker">Ingreso opcional · Paquete fisicoquímico y furanos</p>
+  <h2>Fisicoquímicos del Aceite</h2>
+  <details class="mi"><summary>¿Qué es este módulo y cuándo se usa?</summary>
+    <div class="mi-body"><p>El DGA diagnostica <strong>fallas activas</strong>, pero no evalúa la <strong>condición del aceite como aislante</strong>: un transformador puede estar libre de fallas y aun así tener el aceite comprometido (humedad, baja rigidez dieléctrica, oxidación). Este módulo ingresa el paquete fisicoquímico del mismo informe de laboratorio y los furanos, y la Interpretación Técnica <strong>cruza ambas fuentes</strong>: por ejemplo, rigidez baja + humedad alta apuntan a ingreso de agua; acidez alta + tensión interfacial baja a oxidación; furanos + CO₂/CO bajo confirman daño al papel. Los campos son opcionales — complete los disponibles en su informe. Límites de referencia para clase ≤ 69 kV (ASTM / IEEE C57.106), los mismos de los informes Lubrisider.</p></div>
+  </details>
+  <div class="gas-grid">
+    <div class="gas fq"><div class="formula">H₂O</div><div class="nombre">Humedad · ASTM D1533 · ≤ 35</div>
+      <div class="in"><input id="fq_hum" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Humedad en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas fq"><div class="formula">RD</div><div class="nombre">Rigidez dieléctrica · ASTM D1816 · ≥ 40</div>
+      <div class="in"><input id="fq_rig" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Rigidez dieléctrica en kV"><span class="unidad">kV</span></div></div>
+    <div class="gas fq"><div class="formula">TAN</div><div class="nombre">Acidez · ASTM D974 · ≤ 0,2</div>
+      <div class="in"><input id="fq_acid" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Acidez en mg KOH por gramo"><span class="unidad">mg KOH/g</span></div></div>
+    <div class="gas fq"><div class="formula">TIF</div><div class="nombre">Tensión interfacial · ASTM D971 · ≥ 25</div>
+      <div class="in"><input id="fq_ift" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Tensión interfacial en dinas por centímetro"><span class="unidad">dinas/cm</span></div></div>
+    <div class="gas fq"><div class="formula">tgδ 25</div><div class="nombre">Tangente delta 25 °C · ASTM D924 · ≤ 0,5</div>
+      <div class="in"><input id="fq_td25" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Tangente delta a 25 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">tgδ 90</div><div class="nombre">Tangente delta 90 °C · ASTM D924 · ≤ 5,0</div>
+      <div class="in"><input id="fq_td90" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Tangente delta a 90 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">2FAL</div><div class="nombre">2-furfural · ASTM D5837 · ≤ 100</div>
+      <div class="in"><input id="fq_2fal" type="number" min="0" step="0.1" inputmode="decimal" aria-label="2-furfural en ppb"><span class="unidad">ppb</span></div></div>
+    <div class="gas fq"><div class="formula">DP</div><div class="nombre">Grado de polimerización estimado</div>
+      <div class="in"><input id="fq_dp" type="number" min="0" step="1" inputmode="decimal" aria-label="Grado de polimerización estimado"><span class="unidad">—</span></div></div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div><span id="fqChip" class="chip na">Sin datos</span> <span id="fqResumen" style="font-weight:600;margin-left:8px"></span></div>
+    <div id="fqDetalle" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- ================= INDICADORES AUTOMÁTICOS ================= -->
+<section id="indicadores">
+  <p class="kicker">Cálculo automático</p>
+  <h2>Indicadores Automáticos</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p><strong>TDCG (Total de Gases Combustibles Disueltos)</strong> suma H₂ + CH₄ + C₂H₆ + C₂H₄ + C₂H₂ + CO y lo clasifica en cuatro niveles según IEEE C57.104. Responde a la pregunta «¿cuánto gas hay?» y define la urgencia y la frecuencia de re-muestreo, pero no identifica el tipo de falla.</p><p><strong>La relación CO₂/CO</strong> evalúa la participación del aislamiento sólido: valores entre 5 y 10 son típicos; valores bajos indican degradación acelerada del papel, el componente no reemplazable del transformador.</p></div></details>
+  <div class="ind-grid">
+    <div class="card">
+      <h3>TDCG — Gases Combustibles Totales Disueltos</h3>
+      <div class="big-val"><span id="tdcgVal">0</span> <small>ppm</small></div>
+      <div style="margin-top:10px"><span id="tdcgChip" class="chip ok">Nivel 1</span></div>
+      <p class="ind-desc" id="tdcgDesc">TDCG = H₂ + CH₄ + C₂H₆ + C₂H₄ + C₂H₂ + CO. Clasificación según IEEE C57.104.</p>
+      <div class="tbl-wrap" style="margin-top:14px">
+        <table class="tbl" aria-label="Evaluación individual por gas">
+          <thead><tr><th>Gas</th><th style="text-align:right">Valor (ppm)</th><th style="text-align:right">Límite Nivel 1</th><th>Condición</th></tr></thead>
+          <tbody id="gasTabla"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Relación CO₂ / CO</h3>
+      <div class="big-val" id="ratioVal">—</div>
+      <div style="margin-top:10px"><span id="ratioChip" class="chip na">Sin datos</span></div>
+      <p class="ind-desc" id="ratioDesc">Indicador de la participación del aislamiento sólido (papel) en la falla. Referencia IEC 60599: valores entre 5 y 10 se consideran típicos; valores bajo 3 sugieren degradación de celulosa.</p>
+      <div class="tbl-wrap" style="margin-top:14px">
+        <table class="tbl" aria-label="Criterios de interpretación CO2/CO">
+          <thead><tr><th>Rango CO₂/CO</th><th>Interpretación</th></tr></thead>
+          <tbody>
+            <tr><td class="num">5 – 10</td><td><span class="chip ok">Normal</span></td></tr>
+            <tr><td class="num">3 – 5 &nbsp;·&nbsp; &gt; 10</td><td><span class="chip warn">Advertencia</span></td></tr>
+            <tr><td class="num">1 – 3</td><td><span class="chip high">Posible degradación de papel</span></td></tr>
+            <tr><td class="num">&lt; 1</td><td><span class="chip crit">Crítico</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRIÁNGULO DE DUVAL 1 ================= -->
+<section id="duval">
+  <p class="kicker">Método gráfico · CH₄ — C₂H₄ — C₂H₂</p>
+  <h2>Triángulo de Duval 1</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p>El <strong>Triángulo de Duval 1</strong> es el método gráfico resolutivo principal: normaliza CH₄, C₂H₄ y C₂H₂ a porcentajes y ubica el punto en un mapa de siete zonas de falla (PD, D1, D2, DT, T1, T2, T3). A diferencia de los métodos por relaciones, <em>siempre entrega un diagnóstico</em> cuando hay generación significativa de gases, por lo que el sistema lo aplica solo cuando algún gas combustible supera sus valores típicos (IEC 60599); con gases bajo esos umbrales, el punto se muestra con fines informativos pero el equipo se declara en <strong>condición normal</strong>, nunca en falla.</p></div></details>
+  <div class="duval-grid">
+    <div class="card">
+      <svg id="duvalSVG" viewBox="0 0 640 590" role="img" aria-label="Triángulo de Duval 1 con la muestra ubicada según sus porcentajes de metano, etileno y acetileno"></svg>
+      <div class="duval-pcts">
+        <span class="pct">%CH₄ = <strong id="pCH4">—</strong></span>
+        <span class="pct">%C₂H₄ = <strong id="pC2H4">—</strong></span>
+        <span class="pct">%C₂H₂ = <strong id="pC2H2">—</strong></span>
+      </div>
+      <div class="legend" id="duvalLegend"></div>
+    </div>
+    <div>
+      <div class="result-card" id="resultCard">
+        <div class="rc-kicker">Resultado principal</div>
+        <div class="rc-zona" id="rcZona">—</div>
+        <div class="rc-clasif" id="rcClasif">Ingrese concentraciones de CH₄, C₂H₄ o C₂H₂</div>
+        <div class="rc-row"><span class="k">Riesgo</span><span class="v" id="rcRiesgo">—</span></div>
+        <div class="rc-row"><span class="k">TDCG</span><span class="v" id="rcTdcg">—</span></div>
+        <div class="rc-row"><span class="k">CO₂ / CO</span><span class="v" id="rcRatio">—</span></div>
+        <div class="rc-estado" id="rcEstado">EN ESPERA DE DATOS</div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3>Interpretación Técnica</h3>
+        <div class="interp" id="interpTxt"><p>La interpretación se generará automáticamente al ingresar los resultados cromatográficos.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RELACIONES IEC 60599 ================= -->
+<section id="iec60599">
+  <p class="kicker">Método complementario · C₂H₂/C₂H₄ · CH₄/H₂ · C₂H₄/C₂H₆</p>
+  <h2>Relaciones IEC 60599</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p>El método de <strong>relaciones IEC 60599</strong> calcula tres cocientes entre pares de gases con energías de formación crecientes (C₂H₂/C₂H₄, CH₄/H₂, C₂H₄/C₂H₆) y los compara contra una tabla de seis códigos de falla. Su fortaleza es la trazabilidad normativa internacional; su limitación es que un porcentaje de casos reales cae fuera de los códigos tabulados («no concluyente»), situación que la propia norma resuelve remitiendo al Triángulo de Duval. La concordancia IEC–Duval refuerza la confiabilidad del diagnóstico.</p></div></details>
+  <div class="ind-grid">
+    <div class="card">
+      <div class="ratio-grid">
+        <div class="ratio-box"><div class="rk">R1 · C₂H₂ / C₂H₄</div><div class="rv" id="iecR1">—</div></div>
+        <div class="ratio-box"><div class="rk">R2 · CH₄ / H₂</div><div class="rv" id="iecR2">—</div></div>
+        <div class="ratio-box"><div class="rk">R3 · C₂H₄ / C₂H₆</div><div class="rv" id="iecR3">—</div></div>
+      </div>
+      <div style="margin-top:14px"><span id="iecChip" class="chip na">Sin datos</span>
+        <span id="iecCaso" style="font-weight:600;margin-left:8px"></span></div>
+      <p class="ind-desc" id="iecDesc">Las relaciones IEC solo se calculan cuando al menos un gas combustible supera sus valores típicos (criterio de aplicabilidad de IEC 60599). Con gases bajo valores típicos, el método no aplica y la condición se considera normal.</p>
+      <p class="ind-desc" id="iecConcord"></p>
+    </div>
+    <div class="card">
+      <h3>Códigos de falla IEC 60599</h3>
+      <div class="tbl-wrap">
+        <table class="tbl" aria-label="Criterios de clasificación por relaciones IEC 60599">
+          <thead><tr><th>Caso</th><th>C₂H₂/C₂H₄</th><th>CH₄/H₂</th><th>C₂H₄/C₂H₆</th></tr></thead>
+          <tbody id="iecTabla">
+            <tr data-caso="PD"><td><span class="mini-chip z-PD">PD</span> Descargas parciales</td><td class="num">NS</td><td class="num">&lt; 0,1</td><td class="num">&lt; 0,2</td></tr>
+            <tr data-caso="D1"><td><span class="mini-chip z-D1">D1</span> Descargas de baja energía</td><td class="num">&gt; 1</td><td class="num">0,1 – 0,5</td><td class="num">&gt; 1</td></tr>
+            <tr data-caso="D2"><td><span class="mini-chip z-D2">D2</span> Descargas de alta energía</td><td class="num">0,6 – 2,5</td><td class="num">0,1 – 1</td><td class="num">&gt; 2</td></tr>
+            <tr data-caso="T1"><td><span class="mini-chip z-T1">T1</span> Falla térmica &lt; 300 °C</td><td class="num">NS</td><td class="num">&gt; 1</td><td class="num">&lt; 1</td></tr>
+            <tr data-caso="T2"><td><span class="mini-chip z-T2">T2</span> Falla térmica 300 – 700 °C</td><td class="num">&lt; 0,1</td><td class="num">&gt; 1</td><td class="num">1 – 4</td></tr>
+            <tr data-caso="T3"><td><span class="mini-chip z-T3">T3</span> Falla térmica &gt; 700 °C</td><td class="num">&lt; 0,2</td><td class="num">&gt; 1</td><td class="num">&gt; 4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="nota">NS: no significativo. Un porcentaje de casos reales queda fuera de los códigos tabulados; en esa situación IEC 60599 recomienda apoyarse en el método gráfico (Triángulo de Duval).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROGERS RATIO ================= -->
+<section id="rogers">
+  <p class="kicker">Método complementario · C₂H₂/C₂H₄ · CH₄/H₂ · C₂H₄/C₂H₆</p>
+  <h2>Rogers Ratio</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p><strong>Rogers Ratio</strong> es el método histórico de relaciones adoptado por IEEE C57.104: usa los mismos cocientes conceptuales que IEC pero con una tabla propia de seis casos (0 = normal a 5 = térmica severa) y umbrales distintos. Se incluye porque es el método más difundido en informes de laboratorios norteamericanos, lo que facilita contrastar resultados con informes históricos del activo. Al igual que IEC, puede resultar no concluyente en fallas mixtas.</p></div></details>
+  <div class="ind-grid">
+    <div class="card">
+      <div class="ratio-grid">
+        <div class="ratio-box"><div class="rk">R1 · C₂H₂ / C₂H₄</div><div class="rv" id="rrR1">—</div></div>
+        <div class="ratio-box"><div class="rk">R2 · CH₄ / H₂</div><div class="rv" id="rrR2">—</div></div>
+        <div class="ratio-box"><div class="rk">R5 · C₂H₄ / C₂H₆</div><div class="rv" id="rrR5">—</div></div>
+      </div>
+      <div style="margin-top:14px"><span id="rrChip" class="chip na">Sin datos</span>
+        <span id="rrCaso" style="font-weight:600;margin-left:8px"></span></div>
+      <p class="ind-desc" id="rrDesc">Método de relaciones de Rogers según IEEE C57.104. Aplicable cuando existe generación significativa de gases; combinaciones fuera de los casos tabulados se declaran no concluyentes.</p>
+    </div>
+    <div class="card">
+      <h3>Casos de diagnóstico Rogers</h3>
+      <div class="tbl-wrap">
+        <table class="tbl" aria-label="Casos de diagnóstico del método Rogers Ratio">
+          <thead><tr><th>Caso</th><th>C₂H₂/C₂H₄</th><th>CH₄/H₂</th><th>C₂H₄/C₂H₆</th></tr></thead>
+          <tbody id="rrTabla">
+            <tr data-caso="0"><td><strong>0</strong> · Unidad normal</td><td class="num">&lt; 0,1</td><td class="num">0,1 – 1</td><td class="num">&lt; 1</td></tr>
+            <tr data-caso="1"><td><strong>1</strong> · Descargas parciales de baja energía</td><td class="num">&lt; 0,1</td><td class="num">&lt; 0,1</td><td class="num">&lt; 1</td></tr>
+            <tr data-caso="2"><td><strong>2</strong> · Arco de alta energía</td><td class="num">0,1 – 3</td><td class="num">0,1 – 1</td><td class="num">&gt; 3</td></tr>
+            <tr data-caso="3"><td><strong>3</strong> · Térmica de baja temperatura</td><td class="num">&lt; 0,1</td><td class="num">0,1 – 1</td><td class="num">1 – 3</td></tr>
+            <tr data-caso="4"><td><strong>4</strong> · Térmica &lt; 700 °C</td><td class="num">&lt; 0,1</td><td class="num">&gt; 1</td><td class="num">1 – 3</td></tr>
+            <tr data-caso="5"><td><strong>5</strong> · Térmica &gt; 700 °C</td><td class="num">&lt; 0,1</td><td class="num">&gt; 1</td><td class="num">&gt; 3</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= KEY GAS ================= -->
+<section id="keygas">
+  <p class="kicker">Diagnóstico por gas predominante · IEEE C57.104</p>
+  <h2>Método Key Gas</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p>El método <strong>Key Gas</strong> identifica la falla por el gas <em>dominante</em> de la mezcla en lugar de usar cocientes: CO domina cuando se degrada papel, H₂ en descargas parciales, C₂H₂ en arcos y C₂H₄ en sobrecalentamiento del aceite. Es el método más intuitivo y el mejor para una lectura rápida de tamizaje, pero tiene la mayor tasa de diagnósticos erróneos de los ocho módulos, por lo que su resultado debe confirmarse siempre con los métodos gráficos.</p></div></details>
+  <div class="ind-grid">
+    <div class="card">
+      <h3>Distribución relativa de gases combustibles</h3>
+      <div id="kgBars"></div>
+      <div style="margin-top:14px"><span id="kgChip" class="chip na">Sin datos</span>
+        <span id="kgGas" style="font-weight:600;margin-left:8px"></span></div>
+      <p class="ind-desc" id="kgDesc">El método identifica el patrón de falla a partir del gas combustible dominante. Requiere generación significativa de gases para ser aplicable.</p>
+    </div>
+    <div class="card">
+      <h3>Patrones característicos</h3>
+      <div class="tbl-wrap">
+        <table class="tbl" aria-label="Patrones característicos del método Key Gas">
+          <thead><tr><th>Gas clave</th><th>Falla asociada</th><th>Patrón típico</th></tr></thead>
+          <tbody id="kgTabla">
+            <tr data-caso="CO"><td><strong>CO</strong></td><td>Celulosa sobrecalentada</td><td class="num">CO ≈ 92 % de combustibles</td></tr>
+            <tr data-caso="H2"><td><strong>H₂</strong></td><td>Descargas parciales (corona)</td><td class="num">H₂ ≈ 85 %, CH₄ ≈ 13 %</td></tr>
+            <tr data-caso="C2H2"><td><strong>C₂H₂</strong></td><td>Arco eléctrico</td><td class="num">H₂ ≈ 60 %, C₂H₂ ≈ 30 %</td></tr>
+            <tr data-caso="C2H4"><td><strong>C₂H₄</strong></td><td>Aceite sobrecalentado</td><td class="num">C₂H₄ ≈ 63 %, C₂H₆ ≈ 20 %</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="nota">El método Key Gas siempre que aplica entrega un patrón, pero su tasa de diagnósticos erróneos es mayor que los métodos gráficos; utilizarlo como tamizaje preliminar y confirmar con Duval.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DUVAL 4 Y 5 ================= -->
+<section id="duval45">
+  <p class="kicker">Confirmación de fallas de baja energía y térmicas · Duval (2008)</p>
+  <h2>Triángulos de Duval 4 y 5</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p>Los <strong>Triángulos 4 y 5</strong> no son métodos independientes sino de <em>refinamiento</em>: se aplican después de Duval 1 usando los gases de baja energía (T4: H₂·CH₄·C₂H₆) o de rango térmico (T5: CH₄·C₂H₄·C₂H₆). Permiten distinguir situaciones que el Triángulo 1 confunde — por ejemplo, separar la <strong>gasificación espuria S</strong> (fenómeno benigno de ciertos aceites nuevos) de una descarga parcial real, o confirmar si una falla térmica está <strong>carbonizando papel (zona C)</strong>. Por eso el sistema los habilita solo cuando el resultado de Duval 1 lo justifica.</p></div></details>
+  <div class="duval-grid" style="grid-template-columns:1fr 1fr">
+    <div class="card">
+      <h3>Duval 4 · H₂ — CH₄ — C₂H₆</h3>
+      <p class="nota" style="margin:0 0 8px">Aplicable solo si Duval 1 resulta <strong>PD, T1 o T2</strong>. Distingue corona (PD), gasificación espuria (S), sobrecalentamiento &lt; 250 °C (O) y posible carbonización del papel (C).</p>
+      <div style="position:relative">
+        <svg id="duval4SVG" viewBox="0 0 560 520" role="img" aria-label="Triángulo de Duval 4"></svg>
+        <div class="na-overlay" id="d4Overlay"><span>NO APLICABLE</span><small id="d4Motivo"></small></div>
+      </div>
+      <div style="margin-top:10px"><span id="d4Chip" class="chip na">Sin datos</span> <span id="d4Nombre" style="font-weight:600;margin-left:8px"></span></div>
+      <div class="legend" id="d4Legend"></div>
+    </div>
+    <div class="card">
+      <h3>Duval 5 · CH₄ — C₂H₄ — C₂H₆</h3>
+      <p class="nota" style="margin:0 0 8px">Aplicable solo si Duval 1 resulta <strong>T2 o T3</strong>. Precisa la severidad térmica (T2, T3), sobrecalentamiento (O), gasificación espuria (S) y posible carbonización del papel (C).</p>
+      <div style="position:relative">
+        <svg id="duval5SVG" viewBox="0 0 560 520" role="img" aria-label="Triángulo de Duval 5"></svg>
+        <div class="na-overlay" id="d5Overlay"><span>NO APLICABLE</span><small id="d5Motivo"></small></div>
+      </div>
+      <div style="margin-top:10px"><span id="d5Chip" class="chip na">Sin datos</span> <span id="d5Nombre" style="font-weight:600;margin-left:8px"></span></div>
+      <div class="legend" id="d5Legend"></div>
+    </div>
+  </div>
+  <p class="nota" style="margin-top:10px">Límites de zona según M. Duval (2008), «The Duval Triangles for LTCs, non-mineral oils and low temperature faults», IEEE Electr. Insul. Mag. 24(6). IEEE C57.104-2019 (Tablas D.3 y D.4) introduce ajustes menores y zonas ND; contrastar contra la norma antes de uso formal en informes.</p>
+</section>
+
+<!-- ================= SÍNTESIS DE MÉTODOS ================= -->
+<section id="sintesis">
+  <p class="kicker">Comparación cruzada de resultados</p>
+  <h2>Síntesis de Métodos</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p>La <strong>síntesis</strong> consolida los ocho módulos en una tabla única y evalúa su <em>convergencia</em>: cuando métodos de naturaleza distinta (gráficos, por relaciones y por gas dominante) coinciden en la misma familia de falla, la confiabilidad del diagnóstico es alta; cuando discrepan, suele tratarse de fallas mixtas, muestras cercanas a límites de zona o problemas de muestreo, y corresponde ponderar la tendencia histórica y ensayos complementarios antes de concluir.</p></div></details>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table class="tbl" aria-label="Síntesis comparativa de los métodos de diagnóstico">
+        <thead><tr><th>Método</th><th>Resultado</th><th>Observación</th></tr></thead>
+        <tbody id="sinTabla"></tbody>
+      </table>
+    </div>
+    <p class="ind-desc" id="sinConclusion"></p>
+  </div>
+</section>
+
+<!-- ================= RECOMENDACIONES ================= -->
+<section id="recomendaciones">
+  <p class="kicker">Acciones de mantenimiento según diagnóstico</p>
+  <h2>Recomendaciones Técnicas</h2>
+  <div class="card">
+    <h3 id="recoTitulo">Sin diagnóstico activo</h3>
+    <ul class="reco" id="recoLista"><li>Ingrese los resultados del análisis cromatográfico para obtener recomendaciones específicas.</li></ul>
+  </div>
+</section>
+
+<!-- ================= HISTORIAL ================= -->
+<section id="historial">
+  <p class="kicker">Registro local · LocalStorage</p>
+  <h2>Historial de Análisis</h2>
+<details class="mi"><summary>¿Qué es este método y cuándo se usa?</summary><div class="mi-body"><p>Cada análisis guardado queda registrado <strong>en el navegador de quien usa la página</strong> (LocalStorage): persiste entre visitas en ese mismo equipo, pero no se comparte entre dispositivos ni usuarios. Use <strong>Respaldar (.json)</strong> para conservar o trasladar el historial completo, <strong>Importar respaldo</strong> para restaurarlo o consolidar historiales de varios equipos, <strong>↺ Abrir</strong> para volver a cargar cualquier análisis en el formulario, y <strong>Exportar Excel/CSV</strong> para llevar los datos a informes.</p></div></details>
+  <div class="card">
+    <div class="hist-actions">
+      <button class="btn primary" type="button" onclick="guardarAnalisis()">Guardar análisis en historial</button>
+      <button class="btn" type="button" onclick="exportarExcel()">Exportar Excel (.xlsx)</button>
+      <button class="btn" type="button" onclick="exportarCSV()">Exportar CSV</button>
+      <button class="btn" type="button" onclick="respaldarJSON()">Respaldar (.json)</button>
+      <button class="btn" type="button" onclick="$('archivoImport').click()">Importar respaldo</button>
+      <input type="file" id="archivoImport" accept=".json" style="display:none" onchange="importarRespaldo(this)">
+      <span class="sp"></span>
+      <label for="filtroTrafo" style="font-size:13px;color:var(--muted)">Transformador:</label>
+      <select id="filtroTrafo" class="btn" style="font-weight:500" onchange="renderHistorial()"><option value="">Todos</option></select>
+      <button class="btn danger" type="button" onclick="limpiarHistorial()">Borrar todo</button>
+    </div>
+    <p class="nota" id="notaCentral" style="display:none;margin:8px 0 0"></p>
+    <div class="tbl-wrap">
+      <table class="tbl" aria-label="Historial de análisis DGA">
+        <thead><tr>
+          <th>Fecha</th><th>Transformador</th>
+          <th style="text-align:right">H₂</th><th style="text-align:right">CH₄</th>
+          <th style="text-align:right">C₂H₂</th><th style="text-align:right">C₂H₄</th>
+          <th style="text-align:right">TDCG</th><th>Nivel</th><th>Zona</th><th>IEC</th><th>Diagnóstico</th><th></th>
+        </tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+    </div>
+    <div class="vacio" id="histVacio">Aún no hay análisis guardados. Complete los datos y presione «Guardar análisis en historial».</div>
+    <div id="tendenciaWrap"></div>
+  </div>
+</section>
+
+<!-- ================= MÉTODOS IMPLEMENTADOS ================= -->
+<section id="futuros">
+  <p class="kicker">Cobertura metodológica del sistema</p>
+  <h2>Métodos Implementados</h2>
+  <div class="fut-grid">
+    <div class="fut" style="border-style:solid;border-color:#bfe3cc;background:#f2faf5"><h4>IEC 60599</h4><p>Diagnóstico por relaciones IEC (C₂H₂/C₂H₄ · CH₄/H₂ · C₂H₄/C₂H₆).</p><span class="tag" style="background:#e8f5ed;color:var(--ok)">Implementado · v2.1</span></div>
+    <div class="fut" style="border-style:solid;border-color:#bfe3cc;background:#f2faf5"><h4>Rogers Ratio</h4><p>Diagnóstico por relaciones de gases (casos 0 – 5).</p><span class="tag" style="background:#e8f5ed;color:var(--ok)">Implementado · v3.0</span></div>
+    <div class="fut" style="border-style:solid;border-color:#bfe3cc;background:#f2faf5"><h4>Key Gas</h4><p>Diagnóstico por gas predominante (IEEE C57.104).</p><span class="tag" style="background:#e8f5ed;color:var(--ok)">Implementado · v3.0</span></div>
+    <div class="fut" style="border-style:solid;border-color:#bfe3cc;background:#f2faf5"><h4>Duval 4</h4><p>Gases de baja energía · confirma PD, T1 y T2.</p><span class="tag" style="background:#e8f5ed;color:var(--ok)">Implementado · v3.0</span></div>
+    <div class="fut" style="border-style:solid;border-color:#bfe3cc;background:#f2faf5"><h4>Duval 5</h4><p>Diagnóstico avanzado de fallas térmicas T2 y T3.</p><span class="tag" style="background:#e8f5ed;color:var(--ok)">Implementado · v3.0</span></div>
+    <div class="fut" style="border-style:solid;border-color:#bfe3cc;background:#f2faf5"><h4>Fisicoquímicos</h4><p>Paquete ASTM + furanos con cruce DGA ↔ condición del aceite.</p><span class="tag" style="background:#e8f5ed;color:var(--ok)">Implementado · v3.3</span></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 <strong>Ingeniero Darío Cornuz</strong> · Sistema Profesional de Diagnóstico DGA para Transformadores de Potencia</span>
+    <span class="ver">Versión 3.3 · GitHub Pages · Sin servidores ni bases de datos externas</span>
+  </div>
+</footer>
+<script>
+"use strict";
+/* =====================================================================
+   SISTEMA DE DIAGNÓSTICO DGA — Ingeniero Darío Cornuz — Versión 3.3
+   Módulos: TDCG · CO2/CO · Duval 1/4/5 · IEC 60599 · Rogers · Key Gas · Fisicoquímicos · Síntesis
+            Triángulo de Duval 1 · Historial (LocalStorage)
+   ===================================================================== */
+
+const $ = id => document.getElementById(id);
+const fmt = (n, d=0) => Number(n).toLocaleString('es-CL',{minimumFractionDigits:d, maximumFractionDigits:Math.max(d,1)});
+
+/* ---------- Almacenamiento seguro (LocalStorage con respaldo en memoria) ---------- */
+const almacen = (() => {
+  let mem = {};
+  let disponible = false;
+  try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); disponible = true; } catch(e){ disponible = false; }
+  return {
+    get(k){ try { return disponible ? localStorage.getItem(k) : (mem[k] ?? null); } catch(e){ return mem[k] ?? null; } },
+    set(k,v){ try { if(disponible){ localStorage.setItem(k,v); return; } } catch(e){} mem[k]=v; },
+    del(k){ try { if(disponible){ localStorage.removeItem(k); return; } } catch(e){} delete mem[k]; }
+  };
+})();
+const CLAVE_HIST = 'dga_historial_v2';
+
+/* ---------- Definición de gases y límites individuales IEEE C57.104 (ppm) ---------- */
+const GASES = [
+  {id:'g_h2',  clave:'h2',  f:'H₂',   nombre:'Hidrógeno',            lim:[100,700,1800],  tdcg:true},
+  {id:'g_ch4', clave:'ch4', f:'CH₄',  nombre:'Metano',               lim:[120,400,1000],  tdcg:true},
+  {id:'g_c2h6',clave:'c2h6',f:'C₂H₆', nombre:'Etano',                lim:[65,100,150],    tdcg:true},
+  {id:'g_c2h4',clave:'c2h4',f:'C₂H₄', nombre:'Etileno',              lim:[50,100,200],    tdcg:true},
+  {id:'g_c2h2',clave:'c2h2',f:'C₂H₂', nombre:'Acetileno',            lim:[1,9,35],        tdcg:true},
+  {id:'g_co',  clave:'co',  f:'CO',   nombre:'Monóxido de carbono',  lim:[350,570,1400],  tdcg:true},
+  {id:'g_co2', clave:'co2', f:'CO₂',  nombre:'Dióxido de carbono',   lim:[2500,4000,10000],tdcg:false},
+  {id:'g_o2',  clave:'o2',  f:'O₂',   nombre:'Oxígeno',              lim:null, tdcg:false},
+  {id:'g_n2',  clave:'n2',  f:'N₂',   nombre:'Nitrógeno',            lim:null, tdcg:false},
+];
+
+const NIVELES_TDCG = [
+  {max:720,      n:1, css:'ok',   txt:'Nivel 1 · Operación normal',
+   desc:'Operación satisfactoria. Envejecimiento normal del sistema de aislamiento. Mantener el programa de muestreo habitual.'},
+  {max:1920,     n:2, css:'warn', txt:'Nivel 2 · Superior a lo normal',
+   desc:'Concentración de gases combustibles superior a lo normal. Se recomienda investigar la causa y aumentar la frecuencia de muestreo.'},
+  {max:4630,     n:3, css:'high', txt:'Nivel 3 · Descomposición significativa',
+   desc:'Alto nivel de descomposición del aislamiento. Establecer vigilancia estrecha, analizar tendencias y planificar acciones correctivas.'},
+  {max:Infinity, n:4, css:'crit', txt:'Nivel 4 · Descomposición severa',
+   desc:'Descomposición excesiva. La operación continuada puede conducir a la falla del transformador. Considerar retiro de servicio y evaluación inmediata.'}
+];
+
+/* ---------- Zonas de falla — Triángulo de Duval 1 ---------- */
+const ZONAS = {
+  PD:{nombre:'Descargas Parciales',            color:'#a8d5f2', riesgo:'MODERADO',    css:'warn',
+      estado:'SEGUIMIENTO PROGRAMADO', borde:'#c99400'},
+  D1:{nombre:'Descargas de Baja Energía',      color:'#6fa5d8', riesgo:'MEDIO-ALTO',  css:'high',
+      estado:'VIGILANCIA REFORZADA', borde:'#d96c1e'},
+  D2:{nombre:'Descargas de Alta Energía',      color:'#3c6ea5', riesgo:'ALTO',        css:'crit',
+      estado:'ATENCIÓN PRIORITARIA', borde:'#c22f3d'},
+  DT:{nombre:'Falla Mixta Térmica y Eléctrica',color:'#8d7ab5', riesgo:'ALTO',        css:'crit',
+      estado:'ATENCIÓN PRIORITARIA', borde:'#c22f3d'},
+  T1:{nombre:'Falla Térmica < 300 °C',         color:'#f2c98a', riesgo:'MEDIO',       css:'warn',
+      estado:'VIGILANCIA', borde:'#c99400'},
+  T2:{nombre:'Falla Térmica 300 – 700 °C',     color:'#e79a45', riesgo:'MEDIO-ALTO',  css:'high',
+      estado:'VIGILANCIA REFORZADA', borde:'#d96c1e'},
+  T3:{nombre:'Falla Térmica > 700 °C',         color:'#b65c1e', riesgo:'ALTO',        css:'crit',
+      estado:'ATENCIÓN PRIORITARIA', borde:'#c22f3d'}
+};
+const SEVERIDAD = {PD:2, T1:2, T2:3, D1:3, DT:4, T3:4, D2:5};
+
+/* Vértices de cada zona en coordenadas ternarias [%CH4, %C2H4, %C2H2] */
+const POLIGONOS = {
+  PD:[[100,0,0],[98,2,0],[98,0,2]],
+  T1:[[98,2,0],[98,0,2],[96,0,4],[76,20,4],[80,20,0]],
+  T2:[[80,20,0],[76,20,4],[46,50,4],[50,50,0]],
+  T3:[[50,50,0],[35,50,15],[0,85,15],[0,100,0]],
+  DT:[[96,0,4],[87,0,13],[47,40,13],[31,40,29],[0,71,29],[0,85,15],[35,50,15],[46,50,4],[76,20,4]],
+  D1:[[87,0,13],[0,0,100],[0,23,77],[64,23,13]],
+  D2:[[64,23,13],[0,23,77],[0,71,29],[31,40,29],[47,40,13]]
+};
+
+const INTERPRETACION = {
+  PD:'La muestra presenta una proporción dominante de metano, compatible con descargas parciales de tipo corona en el aceite. La ubicación en la zona PD del Triángulo de Duval indica actividad de descargas de baja intensidad, generalmente asociadas a burbujas de gas, humedad o cavidades en el aislamiento.',
+  D1:'La muestra presenta concentraciones relativas de gases compatibles con descargas eléctricas de baja energía. La ubicación dentro de la zona D1 del Triángulo de Duval indica posible chisporroteo, descargas superficiales (tracking) o arcos incipientes de baja intensidad.',
+  D2:'La muestra presenta concentraciones relativas de gases compatibles con fallas eléctricas de alta energía. La ubicación dentro de la zona D2 del Triángulo de Duval indica posible presencia de arcos internos en el transformador.',
+  DT:'La muestra presenta una combinación de gases característica de fallas mixtas, con componentes simultáneos de origen térmico y eléctrico. La ubicación dentro de la zona DT del Triángulo de Duval requiere evaluar ambos mecanismos de falla en paralelo.',
+  T1:'La muestra presenta concentraciones relativas de gases compatibles con una falla térmica de baja temperatura (inferior a 300 °C). La ubicación dentro de la zona T1 del Triángulo de Duval sugiere sobrecalentamientos localizados o puntos calientes incipientes.',
+  T2:'La muestra presenta concentraciones relativas de gases compatibles con una falla térmica de temperatura media (entre 300 y 700 °C). La ubicación dentro de la zona T2 del Triángulo de Duval sugiere sobrecalentamiento de conductores, conexiones o circulación deficiente de aceite.',
+  T3:'La muestra presenta concentraciones relativas de gases compatibles con una falla térmica severa (superior a 700 °C). La ubicación dentro de la zona T3 del Triángulo de Duval indica sobrecalentamiento extremo, con posible carbonización del aceite y compromiso del aislamiento sólido.'
+};
+
+const RECOMENDACIONES = {
+  PD:['Monitorear evolución del hidrógeno.','Comparar resultados históricos.','Mantener seguimiento periódico.','Revisar condiciones operacionales.'],
+  D1:['Incrementar frecuencia de muestreo.','Verificar posibles descargas localizadas.','Evaluar conexiones internas.','Correlacionar resultados con termografía.'],
+  D2:['Investigar presencia de arcos eléctricos.','Correlacionar con ensayos dieléctricos.','Incrementar monitoreo.','Revisar eventos de protecciones.','Evaluar reducción temporal de carga.','Programar inspección especializada.'],
+  DT:['Evaluar simultáneamente efectos térmicos y eléctricos.','Analizar tendencia histórica.','Realizar ensayos complementarios.','Incrementar vigilancia operacional.'],
+  T1:['Investigar puntos calientes localizados.','Verificar circulación de aceite.','Monitorear evolución de hidrocarburos.'],
+  T2:['Inspeccionar sistema de refrigeración.','Verificar radiadores.','Analizar historial térmico.','Programar nuevo muestreo.'],
+  T3:['Evaluar condición crítica.','Verificar degradación térmica severa.','Analizar aislamiento sólido.','Implementar monitoreo intensivo.','Evaluar intervención programada.']
+};
+
+/* =====================================================================
+   LECTURA Y CÁLCULOS
+   ===================================================================== */
+function leerGases(){
+  const g = {};
+  GASES.forEach(x => { const v = parseFloat($(x.id).value); g[x.clave] = (isFinite(v) && v >= 0) ? v : 0; });
+  return g;
+}
+const calcTDCG = g => g.h2 + g.ch4 + g.c2h6 + g.c2h4 + g.c2h2 + g.co;
+const nivelTDCG = t => NIVELES_TDCG.find(n => t <= n.max);
+
+function condicionGas(valor, lim){
+  if(!lim) return null;
+  if(valor <= lim[0]) return {n:1, css:'ok',   txt:'Nivel 1'};
+  if(valor <= lim[1]) return {n:2, css:'warn', txt:'Nivel 2'};
+  if(valor <= lim[2]) return {n:3, css:'high', txt:'Nivel 3'};
+  return {n:4, css:'crit', txt:'Nivel 4'};
+}
+
+function evaluarRatio(g){
+  if(g.co < 1 || (g.co2 + g.co) < 20) return {valido:false, txt:'Sin datos', css:'na',
+    desc:'Se requieren concentraciones significativas de CO y CO₂ para una interpretación confiable de la relación.'};
+  const r = g.co2 / g.co;
+  if(r >= 5 && r <= 10) return {valido:true, r, txt:'Normal', css:'ok',
+    desc:'La relación CO₂/CO se encuentra dentro del rango típico. No hay evidencia de degradación anormal del aislamiento celulósico.'};
+  if(r > 10) return {valido:true, r, txt:'Advertencia', css:'warn',
+    desc:'Relación elevada: posible envejecimiento térmico de la celulosa a baja temperatura o ingreso de aire. Verificar sellos y correlacionar con O₂/N₂.'};
+  if(r >= 3) return {valido:true, r, txt:'Advertencia', css:'warn',
+    desc:'Relación levemente baja respecto del rango típico. Vigilar la evolución del CO en muestreos sucesivos.'};
+  if(r >= 1) return {valido:true, r, txt:'Posible degradación de papel', css:'high',
+    desc:'Relación baja: indica probable participación del aislamiento sólido (papel) en la falla, con generación preferente de CO. Considerar análisis de furanos (2-FAL).'};
+  return {valido:true, r, txt:'Crítico', css:'crit',
+    desc:'Relación muy baja: fuerte evidencia de degradación activa de celulosa a alta temperatura. Priorizar evaluación del estado del aislamiento sólido.'};
+}
+
+/* ---------- Relaciones IEC 60599 ---------- */
+/* Valores típicos de concentración (IEC 60599, transformadores sin OLTC comunicante) */
+const TIPICOS_IEC = {h2:150, ch4:130, c2h2:20, c2h4:280, c2h6:90, co:600, co2:14000};
+
+const CASOS_IEC = {
+  PD:{nombre:'Descargas parciales', css:'warn',
+      desc:'Descargas de tipo corona en cavidades gaseosas o burbujas, con posible depósito de cera (X-wax) en el papel.'},
+  D1:{nombre:'Descargas de baja energía', css:'high',
+      desc:'Chisporroteo o arcos incipientes: perforaciones del papel, carbonización superficial (tracking) o partículas carbonizadas en el aceite.'},
+  D2:{nombre:'Descargas de alta energía', css:'crit',
+      desc:'Arcos de potencia con destrucción extensa de aislamiento, carbonización severa, posible fusión de metal y actuación de protecciones.'},
+  T1:{nombre:'Falla térmica < 300 °C', css:'warn',
+      desc:'Sobrecalentamiento leve: papel con tonalidad parda, posibles sobrecargas o restricciones de refrigeración.'},
+  T2:{nombre:'Falla térmica 300 – 700 °C', css:'high',
+      desc:'Carbonización del papel, puntos calientes en conductores o conexiones, corrientes circulantes.'},
+  T3:{nombre:'Falla térmica > 700 °C', css:'crit',
+      desc:'Carbonización extensa del aceite, coloración de metales o fusión: falla térmica severa.'}
+};
+
+function razon(num, den){
+  if(den > 0) return num/den;
+  return num > 0 ? Infinity : null;   // null: indeterminada (0/0)
+}
+function fmtRazon(r){
+  if(r === null) return '0 / 0';
+  if(r === Infinity) return '∞';
+  return fmt(r, 2);
+}
+
+function evaluarIEC(g){
+  // Aplicabilidad: al menos un gas combustible sobre sus valores típicos
+  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) ||
+                 g.co > TIPICOS_IEC.co;
+  const r1 = razon(g.c2h2, g.c2h4);   // C2H2/C2H4
+  const r2 = razon(g.ch4,  g.h2);     // CH4/H2
+  const r3 = razon(g.c2h4, g.c2h6);   // C2H4/C2H6
+
+  if((g.h2+g.ch4+g.c2h2+g.c2h4+g.c2h6) <= 0)
+    return {valido:false, aplica:false, r1, r2, r3, caso:null, txt:'Sin datos', css:'na',
+      desc:'Ingrese concentraciones de gases combustibles para calcular las relaciones IEC.'};
+
+  if(!aplica)
+    return {valido:true, aplica:false, r1, r2, r3, caso:null, txt:'Condición normal', css:'ok',
+      desc:'Todos los gases se encuentran bajo sus valores típicos según IEC 60599. Las relaciones no son aplicables y no se requiere clasificación de falla por este método.'};
+
+  const v1 = r1 ?? 0, v2 = r2 ?? 0, v3 = r3 ?? 0;
+  let caso = null;
+  if(v2 < 0.1 && v3 < 0.2 && v1 < 0.3)                                caso = 'PD';
+  else if(v1 > 1 && v2 >= 0.1 && v2 <= 0.5 && v3 > 1)                 caso = 'D1';
+  else if(v1 >= 0.6 && v1 <= 2.5 && v2 >= 0.1 && v2 <= 1 && v3 > 2)   caso = 'D2';
+  else if(v1 < 0.1 && v2 > 1 && v3 < 1)                               caso = 'T1';
+  else if(v1 < 0.1 && v2 > 1 && v3 >= 1 && v3 <= 4)                   caso = 'T2';
+  else if(v1 < 0.2 && v2 > 1 && v3 > 4)                               caso = 'T3';
+
+  if(caso){
+    const c = CASOS_IEC[caso];
+    return {valido:true, aplica:true, r1, r2, r3, caso, txt:c.nombre, css:c.css, desc:c.desc};
+  }
+  return {valido:true, aplica:true, r1, r2, r3, caso:null, txt:'No concluyente', css:'na',
+    desc:'La combinación de relaciones queda fuera de los códigos tabulados por IEC 60599 (situación reconocida por la propia norma en un porcentaje de los casos reales). Utilizar el Triángulo de Duval como método resolutivo.'};
+}
+
+/* ---------- Rogers Ratio (IEEE C57.104) ---------- */
+const CASOS_ROGERS = {
+  0:{nombre:'Unidad normal', css:'ok',
+     desc:'Las relaciones corresponden a envejecimiento normal del sistema de aislamiento. Sin evidencia de falla activa por este método.'},
+  1:{nombre:'Descargas parciales de baja energía', css:'warn',
+     desc:'Patrón compatible con descargas parciales de baja densidad de energía. Correlacionar con la evolución del hidrógeno.'},
+  2:{nombre:'Arco de alta energía', css:'crit',
+     desc:'Patrón compatible con arcos de potencia. Correlacionar con eventos de protecciones y ensayos dieléctricos.'},
+  3:{nombre:'Térmica de baja temperatura', css:'warn',
+     desc:'Sobrecalentamiento leve, generalmente asociado a sobrecargas o restricciones de refrigeración.'},
+  4:{nombre:'Térmica < 700 °C', css:'high',
+     desc:'Sobrecalentamiento de rango medio en conductores, conexiones o núcleo.'},
+  5:{nombre:'Térmica > 700 °C', css:'crit',
+     desc:'Falla térmica severa con posible carbonización del aceite.'}
+};
+function evaluarRogers(g){
+  const r1 = razon(g.c2h2, g.c2h4), r2 = razon(g.ch4, g.h2), r5 = razon(g.c2h4, g.c2h6);
+  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) || g.co > TIPICOS_IEC.co;
+  if((g.h2+g.ch4+g.c2h2+g.c2h4+g.c2h6) <= 0)
+    return {valido:false, aplica:false, r1, r2, r5, caso:null, txt:'Sin datos', css:'na',
+      desc:'Ingrese concentraciones de gases combustibles para calcular las relaciones de Rogers.'};
+  if(!aplica)
+    return {valido:true, aplica:false, r1, r2, r5, caso:null, txt:'Condición normal', css:'ok',
+      desc:'Gases bajo valores típicos: la generación no es significativa y el método no requiere clasificación de falla.'};
+  const v1 = r1 ?? 0, v2 = r2 ?? 0, v5 = r5 ?? 0;
+  let caso = null;
+  if(v1 < 0.1 && v2 >= 0.1 && v2 <= 1 && v5 < 1)        caso = 0;
+  else if(v1 < 0.1 && v2 < 0.1 && v5 < 1)               caso = 1;
+  else if(v1 >= 0.1 && v1 <= 3 && v2 >= 0.1 && v2 <= 1 && v5 > 3) caso = 2;
+  else if(v1 < 0.1 && v2 >= 0.1 && v2 <= 1 && v5 >= 1 && v5 <= 3) caso = 3;
+  else if(v1 < 0.1 && v2 > 1 && v5 >= 1 && v5 <= 3)     caso = 4;
+  else if(v1 < 0.1 && v2 > 1 && v5 > 3)                 caso = 5;
+  if(caso !== null){
+    const c = CASOS_ROGERS[caso];
+    return {valido:true, aplica:true, r1, r2, r5, caso, txt:c.nombre, css:c.css, desc:c.desc};
+  }
+  return {valido:true, aplica:true, r1, r2, r5, caso:null, txt:'No concluyente', css:'na',
+    desc:'La combinación de relaciones queda fuera de los casos tabulados por Rogers, situación frecuente en fallas mixtas. Priorizar el método gráfico de Duval.'};
+}
+
+/* ---------- Key Gas (IEEE C57.104) ---------- */
+const CASOS_KEYGAS = {
+  CO:  {nombre:'Celulosa sobrecalentada', css:'high',
+        desc:'El monóxido de carbono domina la mezcla de combustibles: degradación térmica del aislamiento sólido (papel). Correlacionar con CO₂/CO y análisis de furanos.'},
+  H2:  {nombre:'Descargas parciales (corona)', css:'warn',
+        desc:'El hidrógeno domina con metano secundario y acetileno despreciable: patrón de descargas de tipo corona en el aceite.'},
+  C2H2:{nombre:'Arco eléctrico', css:'crit',
+        desc:'Presencia significativa de acetileno acompañada de hidrógeno: patrón de arco interno. Requiere investigación prioritaria.'},
+  C2H4:{nombre:'Aceite sobrecalentado', css:'high',
+        desc:'El etileno domina entre los hidrocarburos, con etano secundario: sobrecalentamiento del aceite aislante.'}
+};
+function evaluarKeyGas(g){
+  const tdcg = calcTDCG(g);
+  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) || g.co > TIPICOS_IEC.co;
+  const base = g.h2 + g.ch4 + g.c2h6 + g.c2h4 + g.c2h2;   // combustibles sin CO
+  const pct = {
+    h2:  tdcg>0 ? 100*g.h2/tdcg : 0,   ch4: tdcg>0 ? 100*g.ch4/tdcg : 0,
+    c2h6:tdcg>0 ? 100*g.c2h6/tdcg : 0, c2h4:tdcg>0 ? 100*g.c2h4/tdcg : 0,
+    c2h2:tdcg>0 ? 100*g.c2h2/tdcg : 0, co:  tdcg>0 ? 100*g.co/tdcg : 0
+  };
+  if(tdcg <= 0) return {valido:false, aplica:false, pct, caso:null, txt:'Sin datos', css:'na',
+    desc:'Ingrese concentraciones de gases combustibles para aplicar el método.'};
+  if(!aplica) return {valido:true, aplica:false, pct, caso:null, txt:'Condición normal', css:'ok',
+    desc:'Gases bajo valores típicos: la generación no es significativa y no corresponde asignar un patrón de falla.'};
+  let caso = null;
+  const pCO = g.co / tdcg;
+  const pC2H2b = base>0 ? g.c2h2/base : 0, pH2b = base>0 ? g.h2/base : 0, pC2H4b = base>0 ? g.c2h4/base : 0;
+  if(pCO >= 0.7) caso = 'CO';
+  else if(pC2H2b >= 0.15) caso = 'C2H2';
+  else if(pH2b >= 0.6 && pC2H2b < 0.05) caso = 'H2';
+  else if(pC2H4b >= 0.4) caso = 'C2H4';
+  if(caso){
+    const c = CASOS_KEYGAS[caso];
+    return {valido:true, aplica:true, pct, caso, txt:c.nombre, css:c.css, desc:c.desc};
+  }
+  return {valido:true, aplica:true, pct, caso:null, txt:'Patrón mixto — no concluyente', css:'na',
+    desc:'Ningún gas domina con claridad la mezcla: patrón compatible con fallas combinadas o en evolución. Priorizar los métodos gráficos de Duval.'};
+}
+
+/* ---------- Triángulos de Duval 4 y 5 (Duval, 2008) ---------- */
+const ZONAS_T45 = {
+  PD:{nombre:'Descargas parciales (corona)', color:'#a8d5f2', css:'warn'},
+  S: {nombre:'Gasificación espuria del aceite (stray gassing)', color:'#8fc7a8', css:'ok'},
+  O: {nombre:'Sobrecalentamiento < 250 °C', color:'#f2c98a', css:'warn'},
+  C: {nombre:'Posible carbonización del papel', color:'#9c7653', css:'high'},
+  T2:{nombre:'Falla térmica 300 – 700 °C', color:'#e79a45', css:'high'},
+  T3:{nombre:'Falla térmica > 700 °C', color:'#b65c1e', css:'crit'}
+};
+
+/* Duval 4 — gases H2 (vértice superior), CH4 (inferior izq.), C2H6 (inferior der.)
+   Límites verificados: PD(CH4=2, C2H6=1, CH4=15) · S(C2H6=44, H2=9, C2H6=24, CH4=36) · C(CH4=36, C2H6=24) · O(H2=9, C2H6=24) */
+function zonaDuval4(ph2, pch4, pc2h6){
+  if(pc2h6 <= 1 && pch4 >= 2 && pch4 <= 15) return 'PD';
+  if(pch4 >= 36 && pc2h6 >= 24) return 'C';
+  if((ph2 <= 9 && pc2h6 <= 24) || (pc2h6 >= 44 && pch4 <= 36)) return 'O';
+  return 'S';
+}
+const POLI_T4 = {   // vértices [H2, CH4, C2H6]
+  PD:[[98,2,0],[85,15,0],[84,15,1],[97,2,1]],
+  O:[[[9,91,0],[0,100,0],[0,76,24],[9,67,24]], [[56,0,44],[20,36,44],[0,36,64],[0,0,100]]],
+  C:[[40,36,24],[0,76,24],[0,36,64]],
+  S:[[100,0,0],[98,2,0],[97,2,1],[84,15,1],[85,15,0],[9,91,0],[9,67,24],[40,36,24],[20,36,44],[56,0,44]]
+};
+
+/* Duval 5 — gases CH4 (vértice superior), C2H4 (inferior izq.), C2H6 (inferior der.)
+   Límites según Duval (2008): C2H4 ∈ {1,10,35,70} · CH4 ∈ {2,15} · C2H6 ∈ {12,14,30,54} */
+function zonaDuval5(pch4, pc2h4, pc2h6){
+  if(pc2h4 >= 70) return 'T3';
+  if(pc2h4 >= 35) {
+    if(pc2h6 >= 30) return 'T3';
+    if(pc2h6 <= 12) return 'T2';
+    return 'C';
+  }
+  if(pc2h4 >= 10) return (pc2h6 >= 14) ? 'C' : 'O';
+  if(pc2h4 <= 1 && pch4 >= 15) return 'PD';
+  if(pc2h6 >= 54 || pch4 < 2) return 'O';
+  return 'S';
+}
+const POLI_T5 = {   // vértices [CH4, C2H4, C2H6]
+  T3:[[[0,100,0],[30,70,0],[0,70,30]], [[35,35,30],[0,70,30],[0,35,65]]],
+  T2:[[65,35,0],[30,70,0],[18,70,12],[53,35,12]],
+  C:[[[76,10,14],[51,35,14],[0,35,65],[0,10,90]], [[53,35,12],[18,70,12],[0,70,30],[35,35,30]]],
+  O:[[[36,10,54],[0,10,90],[0,0,100],[46,0,54]], [[90,10,0],[65,35,0],[51,35,14],[76,10,14]]],
+  S:[[99,1,0],[90,10,0],[36,10,54],[45,1,54]],
+  PD:[[100,0,0],[99,1,0],[45,1,54],[15,1,84],[15,0,85]]
+};
+
+/* ---------- Fisicoquímicos del aceite (clase ≤ 69 kV, ASTM / IEEE C57.106) ---------- */
+const FQ_PARAMS = [
+  {id:'fq_hum',  k:'hum',  nombre:'Humedad',             unidad:'ppm',      lim:'≤ 35',   ok:v=>v<=35},
+  {id:'fq_rig',  k:'rig',  nombre:'Rigidez dieléctrica', unidad:'kV',       lim:'≥ 40',   ok:v=>v>=40},
+  {id:'fq_acid', k:'acid', nombre:'Acidez',              unidad:'mg KOH/g', lim:'≤ 0,2',  ok:v=>v<=0.2},
+  {id:'fq_ift',  k:'ift',  nombre:'Tensión interfacial', unidad:'dinas/cm', lim:'≥ 25',   ok:v=>v>=25},
+  {id:'fq_td25', k:'td25', nombre:'Tangente delta 25 °C',unidad:'%',        lim:'≤ 0,5',  ok:v=>v<=0.5},
+  {id:'fq_td90', k:'td90', nombre:'Tangente delta 90 °C',unidad:'%',        lim:'≤ 5,0',  ok:v=>v<=5.0},
+  {id:'fq_2fal', k:'fal',  nombre:'2-furfural (2FAL)',   unidad:'ppb',      lim:'≤ 100',  ok:v=>v<=100},
+  {id:'fq_dp',   k:'dp',   nombre:'Grado de polimerización', unidad:'',     lim:'≥ 450 (fin de vida ≈ 200)', ok:v=>v>=450}
+];
+function evaluarFQ(){
+  const val = {}, items = [];
+  let ingresados = 0, desviaciones = 0;
+  FQ_PARAMS.forEach(p => {
+    const raw = $(p.id).value.trim();
+    const v = raw === '' ? null : parseFloat(raw);
+    val[p.k] = (v === null || isNaN(v)) ? null : v;
+    if(val[p.k] !== null){
+      ingresados++;
+      const cumple = p.ok(val[p.k]);
+      if(!cumple) desviaciones++;
+      items.push({p, v:val[p.k], cumple});
+    }
+  });
+  let css='na', txt='Sin datos', resumen='';
+  if(ingresados > 0){
+    if(desviaciones === 0){ css='ok'; txt='Conforme'; resumen = ingresados + ' parámetro(s) dentro de límites'; }
+    else { css = desviaciones >= 2 ? 'crit' : 'high'; txt = desviaciones + ' desviación(es)';
+           resumen = items.filter(i=>!i.cumple).map(i=>i.p.nombre).join(' · '); }
+  }
+  return {val, items, ingresados, desviaciones, css, txt, resumen};
+}
+/* Cruce fisicoquímicos ↔ DGA: devuelve párrafos HTML para la interpretación técnica */
+function cruceFQDGA(fq, ctx){
+  if(fq.ingresados === 0) return [];
+  const v = fq.val, P = [];
+  const p = s => P.push('<p>' + s + '</p>');
+
+  // Rigidez dieléctrica y humedad
+  if(v.rig !== null && v.rig < 40){
+    if(v.hum !== null && v.hum > 35)
+      p(`La <strong>rigidez dieléctrica de ${fmt(v.rig,1)} kV</strong> (mínimo 40 kV) es coherente con la <strong>humedad elevada de ${fmt(v.hum,1)} ppm</strong>: el cuadro apunta a ingreso de agua al equipo. Inspeccionar sellos, empaquetaduras y sistema de conservación, y programar <strong>tratamiento de aceite por termovacío</strong>.`);
+    else if(v.hum !== null)
+      p(`La <strong>rigidez dieléctrica de ${fmt(v.rig,1)} kV</strong> está bajo el mínimo de 40 kV pese a una humedad conforme (${fmt(v.hum,1)} ppm): el descenso sugiere <strong>partículas, fibras o agua libre localizada</strong> más que humedad disuelta generalizada. Verificar la representatividad de la toma de muestra, inspeccionar por fugas y evaluar <strong>filtrado o termovacío</strong>. Recordar que la humedad relativa del papel puede migrar al aceite con la temperatura de operación.`);
+    else
+      p(`La <strong>rigidez dieléctrica de ${fmt(v.rig,1)} kV</strong> está bajo el mínimo recomendado de 40 kV: evaluar humedad y conteo de partículas para identificar la causa, y programar tratamiento del aceite.`);
+  } else if(v.hum !== null && v.hum > 35){
+    p(`La <strong>humedad de ${fmt(v.hum,1)} ppm</strong> supera el límite de 35 ppm aunque la rigidez aún se mantiene: condición incipiente de contaminación por agua; reforzar vigilancia y revisar sellos y respiradero.`);
+  }
+
+  // Oxidación: acidez y tensión interfacial
+  const acidAlta = v.acid !== null && v.acid > 0.2, iftBaja = v.ift !== null && v.ift < 25;
+  if(acidAlta && iftBaja)
+    p(`La combinación de <strong>acidez elevada (${fmt(v.acid,2)} mg KOH/g)</strong> y <strong>tensión interfacial baja (${fmt(v.ift,1)} dinas/cm)</strong> indica <strong>oxidación avanzada del aceite</strong> con presencia de lodos incipientes. Evaluar regeneración con tierras adsorbentes o cambio de aceite; la oxidación acelera además el envejecimiento del papel.`);
+  else if(acidAlta)
+    p(`La <strong>acidez de ${fmt(v.acid,2)} mg KOH/g</strong> supera el límite de 0,2: proceso de oxidación en desarrollo; vigilar tensión interfacial y color en los próximos muestreos.`);
+  else if(iftBaja)
+    p(`La <strong>tensión interfacial de ${fmt(v.ift,1)} dinas/cm</strong> está bajo el mínimo de 25: presencia de contaminantes polares o productos de oxidación; correlacionar con acidez y color.`);
+
+  // Tangente delta
+  if((v.td90 !== null && v.td90 > 5) || (v.td25 !== null && v.td25 > 0.5))
+    p(`Las <strong>pérdidas dieléctricas (tangente delta) exceden los límites</strong>, lo que revela contaminación polar, humedad o envejecimiento del aceite; este parámetro suele degradarse en conjunto con la rigidez y la humedad.`);
+
+  // Papel: furanos / DP cruzados con DGA
+  const dgaPapel = (ctx.ra && ctx.ra.valido && ctx.ra.r < 3) || ctx.keygasCO || ctx.zonaC;
+  const falAlto = v.fal !== null && v.fal > 100, dpBajo = v.dp !== null && v.dp < 450;
+  if(falAlto || dpBajo){
+    let s = `Los indicadores del aislamiento sólido muestran <strong>degradación del papel</strong> (${falAlto ? '2FAL '+fmt(v.fal,1)+' ppb' : ''}${falAlto && dpBajo ? ' · ' : ''}${dpBajo ? 'DP estimado '+fmt(v.dp,0) : ''}).`;
+    s += dgaPapel
+      ? ` Esta evidencia <strong>converge con el DGA</strong> (relación CO₂/CO reducida y/o patrón de CO), configurando un cuadro consistente de daño a la celulosa: priorizar la evaluación de vida útil remanente del activo.`
+      : ` El DGA no muestra aún un patrón claro de daño al papel, por lo que se recomienda repetir furanos en el próximo muestreo para confirmar tendencia.`;
+    p(s);
+  } else if(v.fal !== null || v.dp !== null){
+    if(dgaPapel)
+      p(`El DGA sugiere participación del papel (CO₂/CO reducida o patrón de CO), pero <strong>los furanos/DP no lo confirman</strong>${v.dp !== null ? ' (DP '+fmt(v.dp,0)+')' : ''}. En esta discrepancia los furanos tienen mayor especificidad para celulosa: repetir ambos ensayos en el próximo muestreo antes de concluir daño al aislamiento sólido.`);
+    else
+      p(`Los indicadores del papel (furanos${v.dp !== null ? ', DP '+fmt(v.dp,0) : ''}) no muestran envejecimiento acelerado del aislamiento sólido, en coherencia con el DGA.`);
+  }
+
+  if(P.length === 0 && fq.desviaciones === 0)
+    p(`El paquete fisicoquímico ingresado se encuentra <strong>íntegramente dentro de límites</strong>: el aceite conserva sus propiedades dieléctricas y químicas, en coherencia con el diagnóstico de gases.`);
+  return P;
+}
+
+/* Zona del Triángulo de Duval 1 según reglas normalizadas */
+function zonaDuval(pch4, pc2h4, pc2h2){
+  if(pch4 >= 98) return 'PD';
+  if(pc2h4 > 50 && pc2h2 <= 15) return 'T3';
+  if(pc2h2 <= 4 && pc2h4 <= 20) return 'T1';
+  if(pc2h2 <= 4 && pc2h4 <= 50) return 'T2';
+  if(pc2h2 > 13 && pc2h4 <= 23) return 'D1';
+  if(pc2h2 > 13 && pc2h4 <= 40) return 'D2';
+  if(pc2h2 > 29 && pc2h4 > 40)  return 'D2';
+  return 'DT';
+}
+
+/* =====================================================================
+   TRIÁNGULO DE DUVAL — SVG
+   ===================================================================== */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const TRI = {x0:110, y0:500, lado:440};          // vértice inferior izquierdo, base, lado
+TRI.h = TRI.lado * Math.sqrt(3) / 2;
+
+/* Ternario → cartesiano. Superior: 100% CH4 · Inf. izq.: 100% C2H2 · Inf. der.: 100% C2H4 */
+function tern(ch4, c2h4, c2h2){
+  const s = ch4 + c2h4 + c2h2;
+  const a = ch4/s, b = c2h4/s;
+  return [ TRI.x0 + TRI.lado*(b + a/2), TRI.y0 - TRI.h*a ];
+}
+function el(tag, attrs, texto){
+  const e = document.createElementNS(SVGNS, tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  if(texto !== undefined) e.textContent = texto;
+  return e;
+}
+
+function construirTriangulo(){
+  const svg = $('duvalSVG');
+  svg.innerHTML = '';
+  const capaZonas = el('g',{}); svg.appendChild(capaZonas);
+
+  // Zonas coloreadas
+  for(const z in POLIGONOS){
+    const pts = POLIGONOS[z].map(v => tern(v[0],v[1],v[2]).map(n=>n.toFixed(1)).join(',')).join(' ');
+    capaZonas.appendChild(el('polygon',{points:pts, fill:ZONAS[z].color, stroke:'#0d2b45',
+      'stroke-width':'1','fill-opacity':'0.9'}));
+  }
+  // Contorno
+  const A = tern(100,0,0), B = tern(0,0,100), C = tern(0,100,0);
+  svg.appendChild(el('polygon',{points:[A,B,C].map(p=>p.join(',')).join(' '),
+    fill:'none', stroke:'#0d2b45','stroke-width':'2.2'}));
+
+  // Escalas porcentuales (marcas cada 10 %, rótulo cada 20 %)
+  const marcas = el('g',{'font-family':"'IBM Plex Mono',monospace",'font-size':'11',fill:'#5b6a79'});
+  for(let v=10; v<100; v+=10){
+    const rot = (v%20===0);
+    // %CH4 — lado izquierdo
+    let p = tern(v,0,100-v);
+    marcas.appendChild(el('line',{x1:p[0],y1:p[1],x2:p[0]-7,y2:p[1]-4,stroke:'#5b6a79','stroke-width':'1'}));
+    if(rot) marcas.appendChild(el('text',{x:p[0]-12,y:p[1]-4,'text-anchor':'end'},v));
+    // %C2H4 — lado derecho
+    p = tern(100-v,v,0);
+    marcas.appendChild(el('line',{x1:p[0],y1:p[1],x2:p[0]+7,y2:p[1]-4,stroke:'#5b6a79','stroke-width':'1'}));
+    if(rot) marcas.appendChild(el('text',{x:p[0]+11,y:p[1]-3},v));
+    // %C2H2 — base
+    p = tern(0,100-v,v);
+    marcas.appendChild(el('line',{x1:p[0],y1:p[1],x2:p[0],y2:p[1]+8,stroke:'#5b6a79','stroke-width':'1'}));
+    if(rot) marcas.appendChild(el('text',{x:p[0],y:p[1]+22,'text-anchor':'middle'},v));
+  }
+  svg.appendChild(marcas);
+
+  // Títulos de ejes
+  const ejes = el('g',{'font-family':"'IBM Plex Sans',sans-serif",'font-size':'14','font-weight':'600',fill:'#0d2b45'});
+  const mIzq = tern(55,0,45), mDer = tern(45,55,0);
+  ejes.appendChild(el('text',{x:mIzq[0]-46,y:mIzq[1]-14,transform:`rotate(-60 ${mIzq[0]-46} ${mIzq[1]-14})`,'text-anchor':'middle'},'% CH₄  →'));
+  ejes.appendChild(el('text',{x:mDer[0]+48,y:mDer[1]-14,transform:`rotate(60 ${mDer[0]+48} ${mDer[1]-14})`,'text-anchor':'middle'},'% C₂H₄  →'));
+  ejes.appendChild(el('text',{x:TRI.x0+TRI.lado/2,y:TRI.y0+48,'text-anchor':'middle'},'←  % C₂H₂'));
+  svg.appendChild(ejes);
+
+  // Etiquetas de zona
+  const centroides = {T1:[76,14,3.2], T2:[63,32,3.2], T3:[18,72,10], DT:[43,32,17], D1:[35,10,55], D2:[24,32,44]};
+  const et = el('g',{'font-family':"'Barlow Condensed',sans-serif",'font-size':'20','font-weight':'700'});
+  for(const z in centroides){
+    const p = tern(...centroides[z]);
+    const oscuro = (z==='D2'||z==='T3'||z==='DT');
+    et.appendChild(el('text',{x:p[0],y:p[1],'text-anchor':'middle',fill:oscuro?'#ffffff':'#0d2b45'},z));
+  }
+  // PD (zona pequeña): rótulo externo con guía
+  const pPD = tern(99,0.5,0.5);
+  et.appendChild(el('line',{x1:pPD[0]+4,y1:pPD[1],x2:pPD[0]+46,y2:pPD[1]-16,stroke:'#0d2b45','stroke-width':'1'}));
+  et.appendChild(el('text',{x:pPD[0]+52,y:pPD[1]-12,fill:'#0d2b45'},'PD'));
+  svg.appendChild(et);
+
+  // Punto de muestra (crosshair + marcador)
+  const gp = el('g',{id:'puntoMuestra',visibility:'hidden'});
+  gp.appendChild(el('circle',{id:'pmHalo',r:'11',fill:'none',stroke:'#c22f3d','stroke-width':'2',opacity:'.85'}));
+  gp.appendChild(el('circle',{id:'pmCentro',r:'5',fill:'#c22f3d',stroke:'#ffffff','stroke-width':'2'}));
+  gp.appendChild(el('text',{id:'pmTxt','font-family':"'IBM Plex Mono',monospace",'font-size':'12','font-weight':'600',fill:'#0d2b45'},'MUESTRA'));
+  svg.appendChild(gp);
+
+  // Leyenda HTML
+  const lg = $('duvalLegend');
+  lg.innerHTML = '';
+  ['PD','D1','D2','DT','T1','T2','T3'].forEach(z=>{
+    const s = document.createElement('span'); s.className='lg';
+    s.innerHTML = `<span class="sw" style="background:${ZONAS[z].color}"></span>${z} · ${ZONAS[z].nombre}`;
+    lg.appendChild(s);
+  });
+}
+
+function ubicarPunto(pch4, pc2h4, pc2h2){
+  const g = document.getElementById('puntoMuestra');
+  if(pch4 === null){ g.setAttribute('visibility','hidden'); return; }
+  const [x,y] = tern(pch4, pc2h4, pc2h2);
+  g.setAttribute('visibility','visible');
+  const halo = document.getElementById('pmHalo'), c = document.getElementById('pmCentro'), t = document.getElementById('pmTxt');
+  halo.setAttribute('cx',x); halo.setAttribute('cy',y);
+  c.setAttribute('cx',x);    c.setAttribute('cy',y);
+  t.setAttribute('x', x + (x > TRI.x0+TRI.lado*0.62 ? -16 : 16));
+  t.setAttribute('text-anchor', x > TRI.x0+TRI.lado*0.62 ? 'end':'start');
+  t.setAttribute('y', y - 14);
+}
+
+/* =====================================================================
+   TRIÁNGULOS 4 Y 5 — CONSTRUCTOR GENÉRICO
+   ===================================================================== */
+const TRI2 = {x0:78, y0:440, lado:400};
+TRI2.h = TRI2.lado * Math.sqrt(3) / 2;
+/* a = gas del vértice superior, b = gas del vértice inferior derecho */
+function ternG(a, b){
+  const af = a/100, bf = b/100;
+  return [ TRI2.x0 + TRI2.lado*(bf + af/2), TRI2.y0 - TRI2.h*af ];
+}
+function construirTrianguloGen(svgId, cfg){
+  const svg = $(svgId);
+  svg.innerHTML = '';
+  const conv = v => ternG(v[0], v[2]);   // vértices [sup, izq, der] → usa (sup, der)
+  const dib = (zona, poly) => {
+    const pts = poly.map(v => conv(v).map(n=>n.toFixed(1)).join(',')).join(' ');
+    svg.appendChild(el('polygon',{points:pts, fill:ZONAS_T45[zona].color, stroke:'#0d2b45',
+      'stroke-width':'1','fill-opacity':'0.9'}));
+  };
+  cfg.orden.forEach(z => {
+    const p = cfg.poligonos[z];
+    (Array.isArray(p[0][0]) ? p : [p]).forEach(poly => dib(z, poly));
+  });
+  const A = ternG(100,0), B = ternG(0,0), C = ternG(0,100);
+  svg.appendChild(el('polygon',{points:[A,B,C].map(p=>p.join(',')).join(' '),
+    fill:'none', stroke:'#0d2b45','stroke-width':'2'}));
+
+  // Escalas porcentuales
+  const marcas = el('g',{'font-family':"'IBM Plex Mono',monospace",'font-size':'10',fill:'#5b6a79'});
+  for(let v=20; v<100; v+=20){
+    let p = ternG(v, 0);   // eje izquierdo (gas superior)
+    marcas.appendChild(el('line',{x1:p[0],y1:p[1],x2:p[0]-6,y2:p[1]-3,stroke:'#5b6a79','stroke-width':'1'}));
+    marcas.appendChild(el('text',{x:p[0]-10,y:p[1]-3,'text-anchor':'end'},v));
+    p = ternG(100-v, v);   // eje derecho (gas inf. derecho)
+    marcas.appendChild(el('line',{x1:p[0],y1:p[1],x2:p[0]+6,y2:p[1]-3,stroke:'#5b6a79','stroke-width':'1'}));
+    marcas.appendChild(el('text',{x:p[0]+9,y:p[1]-2},v));
+    p = ternG(0, 100-v);   // eje inferior (gas inf. izquierdo)
+    marcas.appendChild(el('line',{x1:p[0],y1:p[1],x2:p[0],y2:p[1]+7,stroke:'#5b6a79','stroke-width':'1'}));
+    marcas.appendChild(el('text',{x:p[0],y:p[1]+19,'text-anchor':'middle'},v));
+  }
+  svg.appendChild(marcas);
+
+  // Títulos de ejes
+  const ejes = el('g',{'font-family':"'IBM Plex Sans',sans-serif",'font-size':'13','font-weight':'600',fill:'#0d2b45'});
+  const mIzq = ternG(55,0), mDer = ternG(45,55);
+  ejes.appendChild(el('text',{x:mIzq[0]-42,y:mIzq[1]-12,transform:`rotate(-60 ${mIzq[0]-42} ${mIzq[1]-12})`,'text-anchor':'middle'},'% '+cfg.gases[0]+'  →'));
+  ejes.appendChild(el('text',{x:mDer[0]+44,y:mDer[1]-12,transform:`rotate(60 ${mDer[0]+44} ${mDer[1]-12})`,'text-anchor':'middle'},'% '+cfg.gases[2]+'  →'));
+  ejes.appendChild(el('text',{x:TRI2.x0+TRI2.lado/2,y:TRI2.y0+44,'text-anchor':'middle'},'←  % '+cfg.gases[1]));
+  svg.appendChild(ejes);
+
+  // Etiquetas de zona
+  const et = el('g',{'font-family':"'Barlow Condensed',sans-serif",'font-size':'17','font-weight':'700'});
+  for(const z in cfg.etiquetas){
+    cfg.etiquetas[z].forEach(pos => {
+      const p = conv(pos);
+      const oscuro = (z==='C'||z==='T3');
+      et.appendChild(el('text',{x:p[0],y:p[1],'text-anchor':'middle',fill:oscuro?'#fff':'#0d2b45'},z));
+    });
+  }
+  // PD con guía externa
+  if(cfg.pdGuia){
+    const p = conv(cfg.pdGuia);
+    et.appendChild(el('line',{x1:p[0],y1:p[1],x2:p[0]+38,y2:p[1]-16,stroke:'#0d2b45','stroke-width':'1'}));
+    et.appendChild(el('text',{x:p[0]+44,y:p[1]-12,fill:'#0d2b45'},'PD'));
+  }
+  svg.appendChild(et);
+
+  // Punto de muestra
+  const gp = el('g',{id:cfg.pointId, visibility:'hidden'});
+  gp.appendChild(el('circle',{id:cfg.pointId+'H', r:'9', fill:'none', stroke:'#c22f3d','stroke-width':'2',opacity:'.85'}));
+  gp.appendChild(el('circle',{id:cfg.pointId+'C', r:'4.5', fill:'#c22f3d', stroke:'#fff','stroke-width':'2'}));
+  svg.appendChild(gp);
+
+  // Leyenda
+  const lg = $(cfg.legendId);
+  lg.innerHTML = '';
+  cfg.leyenda.forEach(z=>{
+    const s = document.createElement('span'); s.className='lg';
+    s.innerHTML = `<span class="sw" style="background:${ZONAS_T45[z].color}"></span>${z} · ${ZONAS_T45[z].nombre}`;
+    lg.appendChild(s);
+  });
+}
+function ubicarPuntoGen(pointId, sup, der){
+  const g = $(pointId);
+  if(sup === null){ g.setAttribute('visibility','hidden'); return; }
+  const [x,y] = ternG(sup, der);
+  g.setAttribute('visibility','visible');
+  $(pointId+'H').setAttribute('cx',x); $(pointId+'H').setAttribute('cy',y);
+  $(pointId+'C').setAttribute('cx',x); $(pointId+'C').setAttribute('cy',y);
+}
+
+const CFG_T4 = {
+  gases:['H₂','CH₄','C₂H₆'], poligonos:POLI_T4, orden:['S','O','C','PD'],
+  etiquetas:{ S:[[50,28,22]], O:[[4,89,7],[18,14,68]], C:[[12,52,36]] },
+  pdGuia:[91,8,1], pointId:'pmT4', legendId:'d4Legend', leyenda:['PD','S','O','C']
+};
+const CFG_T5 = {
+  gases:['CH₄','C₂H₄','C₂H₆'], poligonos:POLI_T5, orden:['S','O','C','T2','T3','PD'],
+  etiquetas:{ S:[[70,4,26]], O:[[16,4,80],[74,21,5]], C:[[36,21,43],[28,50,22]], T2:[[42,51,7]], T3:[[9,88,3],[13,49,38]] },
+  pdGuia:[60,0.5,39.5], pointId:'pmT5', legendId:'d5Legend', leyenda:['PD','S','O','C','T2','T3']
+};
+
+/* =====================================================================
+   ACTUALIZACIÓN EN TIEMPO REAL
+   ===================================================================== */
+let estadoActual = null;
+
+function actualizar(){
+  const g = leerGases();
+
+  /* --- TDCG --- */
+  const tdcg = calcTDCG(g);
+  const nv = nivelTDCG(tdcg);
+  $('tdcgVal').textContent = fmt(tdcg,0);
+  $('tdcgChip').className = 'chip ' + nv.css;
+  $('tdcgChip').textContent = nv.txt;
+  $('tdcgDesc').textContent = nv.desc;
+
+  /* --- Tabla por gas --- */
+  const tb = $('gasTabla'); tb.innerHTML = '';
+  GASES.forEach(x => {
+    const c = condicionGas(g[x.clave], x.lim);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong style="font-family:var(--mono)">${x.f}</strong> <span style="color:var(--muted)">${x.nombre}</span></td>
+      <td class="num">${fmt(g[x.clave],0)}</td>
+      <td class="num">${x.lim ? fmt(x.lim[0],0) : '—'}</td>
+      <td>${c ? `<span class="chip ${c.css}">${c.txt}</span>` : '<span class="chip na">Referencial</span>'}</td>`;
+    tb.appendChild(tr);
+  });
+
+  /* --- CO2/CO --- */
+  const ra = evaluarRatio(g);
+  $('ratioVal').textContent = ra.valido ? fmt(ra.r,1) : '—';
+  $('ratioChip').className = 'chip ' + ra.css;
+  $('ratioChip').textContent = ra.txt;
+  $('ratioDesc').textContent = ra.desc;
+
+  /* --- Duval --- */
+  /* Compuerta de aplicabilidad (IEEE C57.104 / IEC 60599): el método gráfico solo se
+     interpreta con generación significativa de gases. Con todos los gases combustibles
+     bajo sus valores típicos, la posición del punto es ruido de fondo y el equipo se
+     declara en condición normal — nunca en falla. */
+  const genSignificativa = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]);
+  const suma = g.ch4 + g.c2h4 + g.c2h2;
+  let zona = null, pch4 = null, pc2h4 = null, pc2h2 = null, duvalNormal = false;
+  if(suma > 0){
+    pch4 = 100*g.ch4/suma; pc2h4 = 100*g.c2h4/suma; pc2h2 = 100*g.c2h2/suma;
+    if(genSignificativa) zona = zonaDuval(pch4, pc2h4, pc2h2);
+    else duvalNormal = true;
+  }
+  $('pCH4').textContent  = pch4  === null ? '—' : fmt(pch4,1)+' %';
+  $('pC2H4').textContent = pc2h4 === null ? '—' : fmt(pc2h4,1)+' %';
+  $('pC2H2').textContent = pc2h2 === null ? '—' : fmt(pc2h2,1)+' %';
+  ubicarPunto(pch4, pc2h4, pc2h2);
+
+  /* --- Relaciones IEC 60599 --- */
+  const iec = evaluarIEC(g);
+  $('iecR1').textContent = fmtRazon(iec.r1);
+  $('iecR2').textContent = fmtRazon(iec.r2);
+  $('iecR3').textContent = fmtRazon(iec.r3);
+  $('iecChip').className = 'chip ' + iec.css;
+  $('iecChip').textContent = iec.caso ? iec.caso : iec.txt;
+  $('iecCaso').textContent = iec.caso ? iec.txt : '';
+  $('iecDesc').textContent = iec.desc;
+  document.querySelectorAll('#iecTabla tr').forEach(tr =>
+    tr.classList.toggle('activa', iec.caso !== null && tr.dataset.caso === iec.caso));
+  const conc = $('iecConcord');
+  if(iec.caso && zona){
+    if(iec.caso === zona){
+      conc.textContent = '✓ Concordancia entre métodos: el diagnóstico IEC coincide con la zona ' + zona + ' del Triángulo de Duval, lo que refuerza la confiabilidad del resultado.';
+      conc.style.color = 'var(--ok)';
+    } else {
+      conc.textContent = '⚠ Discrepancia entre métodos: IEC clasifica ' + iec.caso + ' y Duval ' + zona + '. Revisar calidad del muestreo, límites de detección del laboratorio y evolución histórica antes de concluir.';
+      conc.style.color = 'var(--high)';
+    }
+  } else { conc.textContent = ''; }
+
+  /* --- Rogers Ratio --- */
+  const rr = evaluarRogers(g);
+  $('rrR1').textContent = fmtRazon(rr.r1);
+  $('rrR2').textContent = fmtRazon(rr.r2);
+  $('rrR5').textContent = fmtRazon(rr.r5);
+  $('rrChip').className = 'chip ' + rr.css;
+  $('rrChip').textContent = rr.caso !== null ? ('Caso ' + rr.caso) : rr.txt;
+  $('rrCaso').textContent = rr.caso !== null ? rr.txt : '';
+  $('rrDesc').textContent = rr.desc;
+  document.querySelectorAll('#rrTabla tr').forEach(tr =>
+    tr.classList.toggle('activa', rr.caso !== null && tr.dataset.caso === String(rr.caso)));
+
+  /* --- Key Gas --- */
+  const kg = evaluarKeyGas(g);
+  const kgOrden = [['H₂','h2'],['CH₄','ch4'],['C₂H₆','c2h6'],['C₂H₄','c2h4'],['C₂H₂','c2h2'],['CO','co']];
+  $('kgBars').innerHTML = kgOrden.map(([nom,k]) => {
+    const v = kg.pct[k];
+    return `<div class="kg-row"><span class="kg-g">${nom}</span>
+      <span class="kg-track"><span class="kg-fill" style="width:${Math.min(100,v).toFixed(1)}%"></span></span>
+      <span class="kg-v">${fmt(v,1)} %</span></div>`;
+  }).join('');
+  $('kgChip').className = 'chip ' + kg.css;
+  const kgNom = kg.caso ? (kgOrden.find(x => x[1] === kg.caso.toLowerCase()) || [kg.caso])[0] : null;
+  $('kgChip').textContent = kg.caso ? ('Gas clave: ' + kgNom) : kg.txt;
+  $('kgGas').textContent = kg.caso ? kg.txt : '';
+  $('kgDesc').textContent = kg.desc;
+  document.querySelectorAll('#kgTabla tr').forEach(tr =>
+    tr.classList.toggle('activa', kg.caso !== null && tr.dataset.caso === kg.caso));
+
+  /* --- Duval 4 (aplica solo si Duval 1 ∈ {PD, T1, T2}) --- */
+  const s4 = g.h2 + g.ch4 + g.c2h6;
+  const aplicaT4 = zona !== null && ['PD','T1','T2'].includes(zona);
+  let zonaT4 = null;
+  if(aplicaT4 && s4 > 0){
+    const ph2 = 100*g.h2/s4, pch4 = 100*g.ch4/s4, pc2h6 = 100*g.c2h6/s4;
+    zonaT4 = zonaDuval4(ph2, pch4, pc2h6);
+    ubicarPuntoGen('pmT4', ph2, pc2h6);
+    $('d4Chip').className = 'chip ' + ZONAS_T45[zonaT4].css;
+    $('d4Chip').textContent = 'Zona ' + zonaT4;
+    $('d4Nombre').textContent = ZONAS_T45[zonaT4].nombre;
+    $('d4Overlay').classList.remove('visible');
+  } else {
+    ubicarPuntoGen('pmT4', null);
+    $('d4Chip').className = 'chip ' + (duvalNormal ? 'ok' : 'na');
+    $('d4Chip').textContent = duvalNormal ? 'Condición normal' : (zona === null ? 'Sin datos' : 'No aplicable');
+    $('d4Nombre').textContent = '';
+    $('d4Overlay').classList.toggle('visible', duvalNormal || (zona !== null && !aplicaT4));
+    $('d4Motivo').textContent = duvalNormal ? 'Gases bajo valores típicos: sin generación significativa que interpretar.'
+      : (zona !== null && !aplicaT4 ? `Duval 1 = ${zona}: este triángulo solo confirma fallas PD, T1 o T2.` : '');
+  }
+
+  /* --- Duval 5 (aplica solo si Duval 1 ∈ {T2, T3}) --- */
+  const s5 = g.ch4 + g.c2h4 + g.c2h6;
+  const aplicaT5 = zona !== null && ['T2','T3'].includes(zona);
+  let zonaT5 = null;
+  if(aplicaT5 && s5 > 0){
+    const pch4b = 100*g.ch4/s5, pc2h4b = 100*g.c2h4/s5, pc2h6b = 100*g.c2h6/s5;
+    zonaT5 = zonaDuval5(pch4b, pc2h4b, pc2h6b);
+    ubicarPuntoGen('pmT5', pch4b, pc2h6b);
+    $('d5Chip').className = 'chip ' + ZONAS_T45[zonaT5].css;
+    $('d5Chip').textContent = 'Zona ' + zonaT5;
+    $('d5Nombre').textContent = ZONAS_T45[zonaT5].nombre;
+    $('d5Overlay').classList.remove('visible');
+  } else {
+    ubicarPuntoGen('pmT5', null);
+    $('d5Chip').className = 'chip ' + (duvalNormal ? 'ok' : 'na');
+    $('d5Chip').textContent = duvalNormal ? 'Condición normal' : (zona === null ? 'Sin datos' : 'No aplicable');
+    $('d5Nombre').textContent = '';
+    $('d5Overlay').classList.toggle('visible', duvalNormal || (zona !== null && !aplicaT5));
+    $('d5Motivo').textContent = duvalNormal ? 'Gases bajo valores típicos: sin generación significativa que interpretar.'
+      : (zona !== null && !aplicaT5 ? `Duval 1 = ${zona}: este triángulo solo confirma fallas T2 o T3.` : '');
+  }
+
+  /* --- Fisicoquímicos --- */
+  const fq = evaluarFQ();
+  $('fqChip').className = 'chip ' + fq.css;
+  $('fqChip').textContent = fq.txt;
+  $('fqResumen').textContent = fq.ingresados ? fq.resumen : '';
+  $('fqDetalle').innerHTML = fq.items.map(i =>
+    `<div class="fq-item ${i.cumple?'bien':'mal'}"><span class="fq-n">${i.p.nombre}</span>
+     <span class="fq-v">${fmt(i.v, i.p.k==='acid'||i.p.k==='td25'||i.p.k==='td90'?3:1)} ${i.p.unidad}</span>
+     <span style="color:var(--muted);font-size:12px">Límite: ${i.p.lim} — ${i.cumple?'cumple':'<strong style=\u0022color:var(--crit)\u0022>no cumple</strong>'}</span></div>`).join('');
+
+  /* --- Síntesis de métodos --- */
+  const filaSin = (metodo, chipTxt, chipCss, obs) =>
+    `<tr><td><strong>${metodo}</strong></td><td><span class="chip ${chipCss}">${chipTxt}</span></td><td style="font-size:12.5px;color:var(--muted)">${obs}</td></tr>`;
+  let sin = '';
+  const nvS = nv.txt.split('·');
+  sin += filaSin('TDCG · IEEE C57.104', nvS[0].trim(), nv.css, nvS[1] ? nvS[1].trim() : '');
+  sin += filaSin('Relación CO₂/CO', ra.valido ? ra.txt : 'Sin datos', ra.css, ra.valido ? ('Valor: '+fmt(ra.r,1)) : 'CO insuficiente');
+  sin += filaSin('Fisicoquímicos', fq.ingresados ? fq.txt : 'Sin datos', fq.css, fq.ingresados ? (fq.desviaciones ? fq.resumen : 'Aceite dentro de límites ASTM') : 'Módulo opcional — sin datos ingresados');
+  sin += filaSin('Duval 1', zona ? ('Zona '+zona) : (duvalNormal ? 'Condición normal' : 'Sin datos'), zona ? ZONAS[zona].css : (duvalNormal ? 'ok' : 'na'), zona ? ZONAS[zona].nombre : (duvalNormal ? 'Gases bajo valores típicos: método no aplicable' : 'Método resolutivo principal'));
+  sin += filaSin('Relaciones IEC 60599', iec.aplica ? (iec.caso || 'No concluyente') : iec.txt, iec.css, iec.caso ? CASOS_IEC[iec.caso].nombre : '');
+  sin += filaSin('Rogers Ratio', rr.aplica ? (rr.caso !== null ? ('Caso '+rr.caso) : 'No concluyente') : rr.txt, rr.css, rr.caso !== null ? CASOS_ROGERS[rr.caso].nombre : '');
+  sin += filaSin('Key Gas', kg.aplica ? (kg.caso || 'No concluyente') : kg.txt, kg.css, kg.caso ? CASOS_KEYGAS[kg.caso].nombre : '');
+  sin += filaSin('Duval 4', zonaT4 ? ('Zona '+zonaT4) : (duvalNormal ? 'Condición normal' : (aplicaT4 ? 'Sin datos' : 'No aplicable')), zonaT4 ? ZONAS_T45[zonaT4].css : (duvalNormal ? 'ok' : 'na'), zonaT4 ? ZONAS_T45[zonaT4].nombre : (duvalNormal ? '' : 'Requiere Duval 1 = PD, T1 o T2'));
+  sin += filaSin('Duval 5', zonaT5 ? ('Zona '+zonaT5) : (duvalNormal ? 'Condición normal' : (aplicaT5 ? 'Sin datos' : 'No aplicable')), zonaT5 ? ZONAS_T45[zonaT5].css : (duvalNormal ? 'ok' : 'na'), zonaT5 ? ZONAS_T45[zonaT5].nombre : (duvalNormal ? '' : 'Requiere Duval 1 = T2 o T3'));
+  $('sinTabla').innerHTML = sin;
+
+  // Conclusión de convergencia
+  const electricos = ['D1','D2'], termicos = ['T1','T2','T3'];
+  let convergen = 0, total = 0;
+  const familias = v => electricos.includes(v) ? 'E' : (termicos.includes(v) ? 'T' : (v==='PD' ? 'P' : null));
+  const famDuval = zona ? familias(zona) : null;
+  [iec.caso, rr.caso !== null ? ({1:'PD',2:'D2',3:'T1',4:'T2',5:'T3'}[rr.caso] ?? null) : null].forEach(v => {
+    if(v && famDuval){ total++; if(familias(v) === famDuval || v === zona) convergen++; }
+  });
+  if(zona && total > 0){
+    $('sinConclusion').textContent = convergen === total
+      ? 'Los métodos aplicables convergen en la misma familia de falla, lo que otorga alta confiabilidad al diagnóstico. Utilizar el resultado de Duval 1 como clasificación principal del informe.'
+      : 'Existen discrepancias entre métodos. Esto es esperable en fallas mixtas o en muestras cercanas a los límites de zona; ponderar la tendencia histórica y ensayos complementarios (dieléctricos, furanos, termografía) antes de concluir.';
+  } else {
+    $('sinConclusion').textContent = duvalNormal
+      ? 'Todos los métodos coinciden: gases combustibles bajo valores típicos y sin patrón de falla. El equipo se encuentra en condiciones normales de operación desde la perspectiva del DGA; mantener muestreo periódico para construir tendencia.'
+      : (zona ? 'Métodos por relaciones no concluyentes o no aplicables: el diagnóstico se sostiene en el método gráfico de Duval 1.' : '');
+  }
+
+  /* --- Tarjeta de resultado --- */
+  const rc = $('resultCard');
+  if(zona){
+    const z = ZONAS[zona];
+    rc.style.borderLeftColor = z.borde;
+    $('rcZona').textContent = zona;
+    $('rcClasif').textContent = z.nombre;
+    $('rcRiesgo').textContent = z.riesgo;
+    $('rcEstado').textContent = z.estado;
+    $('rcTdcg').textContent = fmt(tdcg,0)+' ppm · '+nv.txt.split('·')[0].trim();
+    $('rcRatio').textContent = ra.valido ? fmt(ra.r,1)+' · '+ra.txt : 'Sin datos';
+
+    /* --- Interpretación técnica --- */
+    let html = `<p>${INTERPRETACION[zona]}</p>`;
+    html += `<p>El TDCG calculado es de <strong>${fmt(tdcg,0)} ppm</strong>, correspondiente al <strong>${nv.txt.split('·')[0].trim()}</strong> según IEEE C57.104: ${nv.desc.toLowerCase()}</p>`;
+    if(ra.valido) html += `<p>La relación CO₂/CO de <strong>${fmt(ra.r,1)}</strong> se interpreta como <strong>${ra.txt.toLowerCase()}</strong>. ${ra.desc}</p>`;
+    if(iec.aplica){
+      if(iec.caso === zona) html += `<p>El método de relaciones IEC 60599 (R1 = ${fmtRazon(iec.r1)}, R2 = ${fmtRazon(iec.r2)}, R3 = ${fmtRazon(iec.r3)}) clasifica la falla como <strong>${iec.caso} · ${iec.txt}</strong>, en concordancia con el método gráfico de Duval.</p>`;
+      else if(iec.caso) html += `<p>El método de relaciones IEC 60599 clasifica la falla como <strong>${iec.caso} · ${iec.txt}</strong>, distinto de la zona ${zona} de Duval. Ante esta discrepancia, prevalece el análisis conjunto de tendencia y ensayos complementarios.</p>`;
+      else html += `<p>Las relaciones IEC 60599 no entregan una clasificación concluyente para esta combinación de gases; el diagnóstico se sostiene en el método gráfico de Duval.</p>`;
+    }
+    if(rr.aplica && rr.caso !== null) html += `<p>El método Rogers Ratio clasifica la condición como <strong>Caso ${rr.caso} · ${rr.txt}</strong>.${kg.caso ? ` Por su parte, el análisis de gas clave identifica <strong>${kgNom}</strong> como gas predominante, patrón característico de <strong>${kg.txt.toLowerCase()}</strong>.` : ''}</p>`;
+    else if(kg.caso) html += `<p>El análisis de gas clave identifica <strong>${kgNom}</strong> como gas predominante, patrón característico de <strong>${kg.txt.toLowerCase()}</strong>.</p>`;
+    if(zonaT4) html += `<p>Dado que Duval 1 indica una falla de baja energía, el <strong>Triángulo de Duval 4</strong> (H₂ · CH₄ · C₂H₆) refina el diagnóstico en la zona <strong>${zonaT4} · ${ZONAS_T45[zonaT4].nombre}</strong>.</p>`;
+    if(zonaT5) html += `<p>Dado que Duval 1 indica una falla térmica, el <strong>Triángulo de Duval 5</strong> (CH₄ · C₂H₄ · C₂H₆) refina el diagnóstico en la zona <strong>${zonaT5} · ${ZONAS_T45[zonaT5].nombre}</strong>.</p>`;
+    cruceFQDGA(fq, {ra, keygasCO: kg.caso === 'CO', zonaC: zonaT4 === 'C' || zonaT5 === 'C'}).forEach(par => html += par);
+    html += `<p>Se recomienda análisis complementario e inspección especializada según el plan de acciones indicado más abajo.</p>`;
+    $('interpTxt').innerHTML = html;
+
+    /* --- Recomendaciones --- */
+    $('recoTitulo').textContent = `Zona ${zona} · ${z.nombre}`;
+    $('recoLista').innerHTML = RECOMENDACIONES[zona].map(r=>`<li>${r}</li>`).join('');
+  } else if(duvalNormal){
+    rc.style.borderLeftColor = 'var(--ok)';
+    $('rcZona').textContent = 'OK';
+    $('rcClasif').textContent = 'Condición normal — sin falla activa detectable';
+    $('rcRiesgo').textContent = 'BAJO';
+    $('rcEstado').textContent = 'OPERACIÓN NORMAL';
+    $('rcTdcg').textContent = fmt(tdcg,0)+' ppm · '+nv.txt.split('·')[0].trim();
+    $('rcRatio').textContent = ra.valido ? fmt(ra.r,1)+' · '+ra.txt : 'Sin datos';
+    let html = `<p>Todos los gases combustibles se encuentran <strong>bajo sus valores típicos de concentración</strong> (IEC 60599), por lo que los métodos de diagnóstico de falla —incluido el Triángulo de Duval— <strong>no son aplicables</strong>: la posición del punto en el triángulo con esta magnitud de gases corresponde a ruido de fondo del proceso normal de envejecimiento y no debe interpretarse como falla.</p>`;
+    html += `<p>El TDCG de <strong>${fmt(tdcg,0)} ppm</strong> se clasifica en <strong>${nv.txt.split('·')[0].trim()}</strong> según IEEE C57.104.</p>`;
+    if(ra.valido) html += `<p>La relación CO₂/CO de <strong>${fmt(ra.r,1)}</strong> se interpreta como <strong>${ra.txt.toLowerCase()}</strong>.</p>`;
+    const cruces = cruceFQDGA(fq, {ra, keygasCO:false, zonaC:false});
+    if(cruces.length){
+      html += `<p>El diagnóstico de gases corresponde a <strong>condiciones normales de operación</strong>. Evaluación cruzada con el paquete fisicoquímico ingresado:</p>`;
+      cruces.forEach(par => html += par);
+      if(fq.desviaciones > 0) html += `<p>En síntesis: <strong>sin falla activa por DGA, pero con la condición del aceite comprometida</strong> — las acciones correctivas corresponden al tratamiento del aceite, no a una intervención por falla interna.</p>`;
+    } else {
+      html += `<p>El diagnóstico integrado corresponde a un equipo en <strong>condiciones normales de operación</strong> desde la perspectiva de gases disueltos. Nótese que el DGA no evalúa propiedades fisicoquímicas del aceite (rigidez dieléctrica, humedad, acidez); puede ingresarlas en el módulo Fisicoquímicos para una evaluación cruzada.</p>`;
+    }
+    $('interpTxt').innerHTML = html;
+    $('recoTitulo').textContent = fq.desviaciones > 0 ? 'Condición normal por DGA · aceite con desviaciones' : 'Condición normal';
+    const recosNormal = [];
+    if(fq.desviaciones > 0){
+      recosNormal.push('Programar tratamiento del aceite según las desviaciones fisicoquímicas detectadas (termovacío para humedad/rigidez; regeneración para oxidación), sin requerirse intervención por falla interna.');
+      recosNormal.push('Repetir el paquete fisicoquímico después del tratamiento para verificar recuperación de propiedades.');
+    }
+    recosNormal.push('Mantener el programa de muestreo periódico habitual según criticidad del activo (típicamente anual para equipos en Nivel 1).');
+    recosNormal.push('Registrar este análisis en el historial para construir la línea base de tendencia del transformador.');
+    if(fq.ingresados === 0) recosNormal.push('Verificar por separado el ensayo fisicoquímico del aceite (rigidez dieléctrica, humedad, acidez, tensión interfacial), no cubierto por el DGA.');
+    recosNormal.push('Ante cualquier evento operacional relevante (sobrecarga sostenida, cortocircuito pasante, actuación de protecciones), adelantar el siguiente muestreo.');
+    $('recoLista').innerHTML = recosNormal.map(r=>`<li>${r}</li>`).join('');
+  } else {
+    rc.style.borderLeftColor = '#5b6a79';
+    $('rcZona').textContent = '—';
+    $('rcClasif').textContent = 'Ingrese concentraciones de CH₄, C₂H₄ o C₂H₂';
+    $('rcRiesgo').textContent = '—';
+    $('rcTdcg').textContent = fmt(tdcg,0)+' ppm';
+    $('rcRatio').textContent = ra.valido ? fmt(ra.r,1) : '—';
+    $('rcEstado').textContent = 'EN ESPERA DE DATOS';
+    $('interpTxt').innerHTML = '<p>La interpretación se generará automáticamente al ingresar los resultados cromatográficos.</p>';
+    $('recoTitulo').textContent = 'Sin diagnóstico activo';
+    $('recoLista').innerHTML = '<li>Ingrese los resultados del análisis cromatográfico para obtener recomendaciones específicas.</li>';
+  }
+
+  estadoActual = {g, tdcg, nivel:nv.n, zona, duvalNormal, ratio: ra.valido ? ra.r : null, ratioTxt: ra.valido ? ra.txt : null,
+                  iec: iec.aplica ? (iec.caso || 'NC') : (iec.valido ? 'Normal' : null),
+                  rogers: rr.aplica ? (rr.caso !== null ? 'Caso '+rr.caso : 'NC') : 'Normal',
+                  keygas: kg.aplica ? (kg.caso || 'Mixto') : (kg.txt === 'Sin datos' ? null : 'Normal'),
+                  duval4: zonaT4, duval5: zonaT5,
+                  fq: fq.ingresados ? {val: fq.val, desviaciones: fq.desviaciones, txt: fq.txt} : null};
+}
+
+/* =====================================================================
+   HISTORIAL — LocalStorage
+   ===================================================================== */
+function leerHistorial(){
+  try { return JSON.parse(almacen.get(CLAVE_HIST) || '[]'); } catch(e){ return []; }
+}
+function escribirHistorial(h){ almacen.set(CLAVE_HIST, JSON.stringify(h)); }
+
+function guardarAnalisis(){
+  if(!estadoActual) actualizar();
+  const e = estadoActual;
+  if(!e.zona && e.tdcg === 0){ alert('Ingrese resultados cromatográficos antes de guardar.'); return; }
+  const h = leerHistorial();
+  h.push({
+    id: Date.now(),
+    fecha: $('f_fmuestreo').value || new Date().toISOString().slice(0,10),
+    transformador: $('f_trafo').value.trim() || 'Sin identificar',
+    serie: $('f_serie').value.trim(),
+    informe: $('f_informe').value.trim(),
+    gases: e.g,
+    tdcg: Math.round(e.tdcg*10)/10,
+    nivel: e.nivel,
+    zona: e.zona,
+    diagnostico: e.zona ? ZONAS[e.zona].nombre : (e.duvalNormal ? 'Condición normal' : '—'),
+    iec: e.iec || null,
+    rogers: e.rogers || null,
+    keygas: e.keygas || null,
+    duval4: e.duval4 || null,
+    duval5: e.duval5 || null,
+    fq: e.fq || null,
+    ratio: e.ratio === null ? null : Math.round(e.ratio*10)/10
+  });
+  escribirHistorial(h);
+  enviarRegistroCentral(h[h.length - 1]);
+  renderHistorial();
+}
+
+function eliminarRegistro(id){
+  escribirHistorial(leerHistorial().filter(r => r.id !== id));
+  renderHistorial();
+}
+/* =====================================================================
+   REGISTRO CENTRALIZADO (opcional) — Google Sheets vía Apps Script
+   Pegue aquí la URL de su implementación web de Google Apps Script.
+   Si queda vacía, la página funciona 100 % local sin enviar nada.
+   ===================================================================== */
+const URL_REGISTRO_CENTRAL = '';   // ej: 'https://script.google.com/macros/s/AKfy.../exec'
+
+function enviarRegistroCentral(reg){
+  if(!URL_REGISTRO_CENTRAL) return;
+  try{
+    fetch(URL_REGISTRO_CENTRAL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(reg)
+    }).catch(()=>{ /* sin conexión: el registro queda igualmente en el historial local */ });
+  }catch(e){ /* silencioso */ }
+}
+
+/* ---------- Exportar Excel (.xlsx) con SheetJS ---------- */
+function cargarSheetJS(cb){
+  if(window.XLSX){ cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload = cb;
+  s.onerror = () => alert('No fue posible cargar la librería de Excel (verifique conexión a internet). Utilice Exportar CSV como alternativa.');
+  document.head.appendChild(s);
+}
+function exportarExcel(){
+  const h = leerHistorial();
+  if(!h.length){ alert('No hay análisis guardados para exportar.'); return; }
+  cargarSheetJS(() => {
+    const filas = h.map(r => ({
+      'Fecha muestreo': r.fecha, 'Transformador': r.transformador, 'N° Serie': r.serie||'', 'Informe lab.': r.informe||'',
+      'H2 (ppm)': r.gases.h2, 'CH4 (ppm)': r.gases.ch4, 'C2H6 (ppm)': r.gases.c2h6, 'C2H4 (ppm)': r.gases.c2h4,
+      'C2H2 (ppm)': r.gases.c2h2, 'CO (ppm)': r.gases.co, 'CO2 (ppm)': r.gases.co2, 'O2 (ppm)': r.gases.o2, 'N2 (ppm)': r.gases.n2,
+      'TDCG (ppm)': r.tdcg, 'Nivel IEEE': 'N'+r.nivel, 'Duval 1': r.zona||'', 'IEC 60599': r.iec||'',
+      'Rogers': r.rogers||'', 'Key Gas': r.keygas||'', 'Duval 4': r.duval4||'', 'Duval 5': r.duval5||'',
+      'Diagnóstico': r.diagnostico, 'CO2/CO': r.ratio ?? '',
+      'Humedad (ppm)': r.fq?.val?.hum ?? '', 'Rigidez (kV)': r.fq?.val?.rig ?? '', 'Acidez (mgKOH/g)': r.fq?.val?.acid ?? '',
+      'T. Interfacial': r.fq?.val?.ift ?? '', 'TD 25°C (%)': r.fq?.val?.td25 ?? '', 'TD 90°C (%)': r.fq?.val?.td90 ?? '',
+      '2FAL (ppb)': r.fq?.val?.fal ?? '', 'DP est.': r.fq?.val?.dp ?? '', 'Estado FQ': r.fq ? r.fq.txt : ''
+    }));
+    const ws = XLSX.utils.json_to_sheet(filas);
+    ws['!cols'] = Object.keys(filas[0]).map(k => ({wch: Math.max(k.length+2, 12)}));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Historial DGA');
+    const info = XLSX.utils.aoa_to_sheet([
+      ['Sistema Profesional de Diagnóstico DGA para Transformadores de Potencia'],
+      ['Versión', '3.1'], ['Registros', h.length], ['Exportado', new Date().toLocaleString('es-CL')],
+      ['Métodos', 'TDCG (IEEE C57.104) · CO2/CO · Duval 1/4/5 · IEC 60599 · Rogers Ratio · Key Gas'],
+      ['© 2026', 'Ingeniero Darío Cornuz']
+    ]);
+    info['!cols'] = [{wch:22},{wch:80}];
+    XLSX.utils.book_append_sheet(wb, info, 'Información');
+    XLSX.writeFile(wb, 'Historial_DGA_' + new Date().toISOString().slice(0,10) + '.xlsx');
+  });
+}
+
+/* ---------- Respaldo y restauración del historial ---------- */
+function respaldarJSON(){
+  const h = leerHistorial();
+  if(!h.length){ alert('No hay análisis guardados para respaldar.'); return; }
+  const blob = new Blob([JSON.stringify({app:'DGA-DC', version:3, exportado:new Date().toISOString(), registros:h}, null, 1)],
+                        {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Respaldo_DGA_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importarRespaldo(input){
+  const f = input.files[0];
+  if(!f) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    try{
+      const datos = JSON.parse(lector.result);
+      const nuevos = Array.isArray(datos) ? datos : (datos.registros || []);
+      if(!nuevos.length || !nuevos[0].gases) throw new Error('estructura');
+      const actuales = leerHistorial();
+      const ids = new Set(actuales.map(r=>r.id));
+      let agregados = 0;
+      nuevos.forEach(r => { if(!ids.has(r.id)){ actuales.push(r); agregados++; } });
+      escribirHistorial(actuales);
+      renderHistorial();
+      alert(`Respaldo importado: ${agregados} registro(s) nuevo(s) incorporado(s) al historial (${nuevos.length - agregados} ya existían).`);
+    }catch(e){
+      alert('El archivo no corresponde a un respaldo válido del sistema DGA (.json).');
+    }
+    input.value = '';
+  };
+  lector.readAsText(f);
+}
+
+/* ---------- Volver a abrir un análisis guardado ---------- */
+function cargarRegistro(id){
+  const r = leerHistorial().find(x => x.id === id);
+  if(!r) return;
+  const mapa = {g_h2:'h2', g_ch4:'ch4', g_c2h6:'c2h6', g_c2h4:'c2h4', g_c2h2:'c2h2', g_co:'co', g_co2:'co2', g_o2:'o2', g_n2:'n2'};
+  for(const idc in mapa) $(idc).value = r.gases[mapa[idc]] ?? '';
+  $('f_trafo').value = r.transformador === 'Sin identificar' ? '' : r.transformador;
+  $('f_serie').value = r.serie || '';
+  $('f_informe').value = r.informe || '';
+  $('f_fmuestreo').value = r.fecha || '';
+  FQ_PARAMS.forEach(p => $(p.id).value = (r.fq && r.fq.val && r.fq.val[p.k] !== null && r.fq.val[p.k] !== undefined) ? r.fq.val[p.k] : '');
+  actualizar();
+  document.getElementById('cromatografia').scrollIntoView({behavior:'smooth'});
+}
+
+function limpiarHistorial(){
+  if(confirm('¿Eliminar todo el historial de análisis? Esta acción no se puede deshacer.')){
+    almacen.del(CLAVE_HIST);
+    renderHistorial();
+  }
+}
+
+function renderHistorial(){
+  const h = leerHistorial();
+  const filtro = $('filtroTrafo').value;
+
+  // Selector de transformadores
+  const trafos = [...new Set(h.map(r => r.transformador))].sort();
+  const sel = $('filtroTrafo');
+  const previo = sel.value;
+  sel.innerHTML = '<option value="">Todos</option>' + trafos.map(t=>`<option value="${t}">${t}</option>`).join('');
+  sel.value = trafos.includes(previo) ? previo : '';
+
+  const lista = (filtro ? h.filter(r=>r.transformador===filtro) : h).slice().sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||'') || a.id-b.id);
+
+  const tb = $('histBody'); tb.innerHTML = '';
+  $('histVacio').style.display = lista.length ? 'none' : 'block';
+  const cssNivel = {1:'ok',2:'warn',3:'high',4:'crit'};
+  lista.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="font-family:var(--mono);white-space:nowrap">${r.fecha}</td>
+      <td>${r.transformador}</td>
+      <td class="num">${fmt(r.gases.h2,0)}</td><td class="num">${fmt(r.gases.ch4,0)}</td>
+      <td class="num">${fmt(r.gases.c2h2,0)}</td><td class="num">${fmt(r.gases.c2h4,0)}</td>
+      <td class="num"><strong>${fmt(r.tdcg,0)}</strong></td>
+      <td><span class="chip ${cssNivel[r.nivel]}" style="padding:2px 9px;font-size:11px">N${r.nivel}</span></td>
+      <td>${r.zona ? `<span class="mini-chip z-${r.zona}">${r.zona}</span>` : '—'}</td>
+      <td>${r.iec && CASOS_IEC[r.iec] ? `<span class="mini-chip z-${r.iec}">${r.iec}</span>` : (r.iec || '—')}</td>
+      <td style="font-size:12.5px">${r.diagnostico}</td>
+      <td style="white-space:nowrap"><button class="btn" style="padding:3px 9px;font-size:11.5px" onclick="cargarRegistro(${r.id})" title="Volver a abrir este análisis en el formulario">↺ Abrir</button>
+      <button class="btn danger" style="padding:3px 9px;font-size:11.5px" onclick="eliminarRegistro(${r.id})" aria-label="Eliminar registro">✕</button></td>`;
+    tb.appendChild(tr);
+  });
+
+  renderTendencia(lista, filtro);
+}
+
+/* --- Vista histórica: tendencia de TDCG y detección de empeoramiento --- */
+function renderTendencia(lista, filtro){
+  const w = $('tendenciaWrap'); w.innerHTML = '';
+  if(lista.length < 2){
+    if(lista.length === 1) w.innerHTML = '<p class="vacio">Guarde al menos dos análisis del mismo transformador para visualizar tendencias.</p>';
+    return;
+  }
+  const ult = lista[lista.length-1], ant = lista[lista.length-2];
+  const dTdcg = ant.tdcg > 0 ? 100*(ult.tdcg-ant.tdcg)/ant.tdcg : (ult.tdcg>0?100:0);
+  const peorZona = (SEVERIDAD[ult.zona]||0) > (SEVERIDAD[ant.zona]||0);
+  const empeora = dTdcg > 10 || peorZona;
+
+  let motivo = [];
+  if(dTdcg > 10) motivo.push(`TDCG +${fmt(dTdcg,1)} % entre las dos últimas muestras`);
+  if(peorZona)  motivo.push(`la zona de diagnóstico pasó de ${ant.zona||'—'} a ${ult.zona}`);
+
+  // Gráfico de tendencia TDCG (SVG)
+  const W=760, H=170, mL=56, mR=16, mT=18, mB=34;
+  const xs = lista.map((_,i)=> mL + (W-mL-mR) * (lista.length===1?0.5:i/(lista.length-1)));
+  const maxT = Math.max(...lista.map(r=>r.tdcg), 720)*1.12;
+  const y = v => H-mB - (H-mT-mB)*(v/maxT);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Tendencia del TDCG">`;
+  // líneas de referencia de niveles
+  [[720,'#1e8a4c','N1'],[1920,'#c99400','N2'],[4630,'#c22f3d','N3']].forEach(([v,c,t])=>{
+    if(v < maxT) svg += `<line x1="${mL}" y1="${y(v)}" x2="${W-mR}" y2="${y(v)}" stroke="${c}" stroke-dasharray="4 4" stroke-width="1"/>
+      <text x="${W-mR}" y="${y(v)-4}" text-anchor="end" font-size="10" font-family="'IBM Plex Mono',monospace" fill="${c}">${t} · ${fmt(v,0)}</text>`;
+  });
+  svg += `<line x1="${mL}" y1="${H-mB}" x2="${W-mR}" y2="${H-mB}" stroke="#d5dde5"/>`;
+  svg += `<polyline fill="none" stroke="#1a5fa8" stroke-width="2.5" points="${lista.map((r,i)=>xs[i]+','+y(r.tdcg)).join(' ')}"/>`;
+  lista.forEach((r,i)=>{
+    svg += `<circle cx="${xs[i]}" cy="${y(r.tdcg)}" r="4.5" fill="#1a5fa8" stroke="#fff" stroke-width="1.5"/>`;
+    if(lista.length<=8 || i===0 || i===lista.length-1)
+      svg += `<text x="${xs[i]}" y="${H-mB+16}" text-anchor="middle" font-size="10" font-family="'IBM Plex Mono',monospace" fill="#5b6a79">${(r.fecha||'').slice(2)}</text>`;
+  });
+  svg += `<text x="${mL-8}" y="${mT+8}" text-anchor="end" font-size="10" font-family="'IBM Plex Mono',monospace" fill="#5b6a79">ppm</text></svg>`;
+
+  w.innerHTML = `<h3 style="margin-top:6px">Vista Histórica ${filtro?('· '+filtro):''}</h3>
+    <p style="margin:0 0 8px">
+      <span class="badge-trend ${empeora?'up':'flat'}">${empeora?'⚠ Tendencia al empeoramiento':'✓ Sin empeoramiento detectado'}</span>
+      ${motivo.length?`<span style="font-size:13px;color:var(--muted);margin-left:8px">${motivo.join(' · ')}</span>`:''}
+    </p>${svg}
+    <p class="nota">Comparación automática entre las dos últimas muestras del conjunto mostrado. Se marca empeoramiento si el TDCG aumenta más de 10 % o si la zona de diagnóstico avanza hacia una condición más severa. Filtre por transformador para una tendencia específica.</p>`;
+}
+
+function exportarCSV(){
+  const h = leerHistorial();
+  if(!h.length){ alert('No hay registros para exportar.'); return; }
+  const enc = ['Fecha','Transformador','Serie','Informe','H2','CH4','C2H6','C2H4','C2H2','CO','CO2','O2','N2','TDCG','Nivel','Zona','IEC','Rogers','KeyGas','Duval4','Duval5','Diagnostico','CO2_CO','Humedad','Rigidez','Acidez','TensInterf','TD25','TD90','FAL2','DP','FQ_Estado'];
+  const fqv = (r,k) => (r.fq && r.fq.val && r.fq.val[k] !== null && r.fq.val[k] !== undefined) ? r.fq.val[k] : '';
+  const filas = h.map(r => [r.fecha, r.transformador, r.serie||'', r.informe||'',
+    r.gases.h2, r.gases.ch4, r.gases.c2h6, r.gases.c2h4, r.gases.c2h2, r.gases.co, r.gases.co2, r.gases.o2, r.gases.n2,
+    r.tdcg, r.nivel, r.zona||'', r.iec||'', r.rogers||'', r.keygas||'', r.duval4||'', r.duval5||'', r.diagnostico, r.ratio ?? '',
+    fqv(r,'hum'), fqv(r,'rig'), fqv(r,'acid'), fqv(r,'ift'), fqv(r,'td25'), fqv(r,'td90'), fqv(r,'fal'), fqv(r,'dp'), r.fq ? r.fq.txt : ''
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(';'));
+  const csv = '\uFEFF' + enc.join(';') + '\n' + filas.join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'historial_dga.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* =====================================================================
+   EJEMPLO DE VALIDACIÓN (zona D2 esperada)
+   ===================================================================== */
+function cargarEjemplo(){
+  const ej = {g_h2:210, g_ch4:85, g_c2h6:20, g_c2h4:180, g_c2h2:150, g_co:420, g_co2:1650, g_o2:12000, g_n2:58000};
+  for(const k in ej) $(k).value = ej[k];
+  if(!$('f_trafo').value) $('f_trafo').value = 'TR-DEMO';
+  if(!$('f_fmuestreo').value) $('f_fmuestreo').value = new Date().toISOString().slice(0,10);
+  actualizar();
+  document.getElementById('duval').scrollIntoView({behavior:'smooth'});
+}
+
+/* =====================================================================
+   INICIALIZACIÓN
+   ===================================================================== */
+construirTriangulo();
+construirTrianguloGen('duval4SVG', CFG_T4);
+construirTrianguloGen('duval5SVG', CFG_T5);
+if(URL_REGISTRO_CENTRAL){
+  $('notaCentral').style.display = 'block';
+  $('notaCentral').textContent = 'Registro centralizado activo: cada análisis guardado se envía además a la planilla del administrador del sistema.';
+}
+GASES.forEach(x => $(x.id).addEventListener('input', actualizar));
+FQ_PARAMS.forEach(p => $(p.id).addEventListener('input', actualizar));
+actualizar();
+renderHistorial();
+</script>
+</body>
+</html>

@@ -25,7 +25,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font
 .topbar{background:var(--navy);color:#fff;position:relative}
 .topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--blue) 25% 50%,var(--amber) 50% 75%,var(--crit) 75% 100%)}
 .topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center;text-decoration:none;transition:background .15s,border-color .15s}
+.brand-mark:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.6)}
 .brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.6vw,30px);letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
 .brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
 .brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
@@ -89,16 +90,16 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <div class="brand-mark" aria-hidden="true">
+    <a class="brand-mark" href="index.html" aria-label="Volver al inicio" title="Volver al inicio">
       <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><path d="M17 2 6 17h8l-3 11 13-17h-8z" fill="#f2c94c"/></svg>
-    </div>
+    </a>
     <div class="brand">
       <h1>Termografía Guiada</h1>
       <p class="sub">Criterios de severidad, calculadora de ΔT con corrección por carga y casos ilustrativos</p>
       <p class="autor">Ingeniero Darío Cornuz</p>
     </div>
     <div class="top-actions">
-      <a class="btn ghost" href="index.html">DGA</a>
+      <a class="btn ghost" href="dga.html">DGA</a>
       <a class="btn ghost" href="calculadora-ric.html">RIC</a>
       <a class="btn ghost" href="calculadora-nec.html">NEC</a>
       <a class="btn ghost" href="curvas-proteccion.html">Curvas</a>
