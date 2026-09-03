@@ -44,7 +44,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font
 .brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
 .brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
 .top-actions{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
-.btn{font:600 13.5px var(--sans);padding:9px 15px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s}
+.btn{font:600 13.5px var(--sans);padding:9px 15px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
 .btn:hover{background:#f0f4f8}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn.primary:hover{background:#134d8a}
@@ -250,6 +250,7 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
       <p class="autor">Ingeniero Darío Cornuz</p>
     </div>
     <div class="top-actions">
+      <a class="btn ghost" href="calculadora-ric.html">Calculadora RIC</a>
       <button class="btn ghost" onclick="window.print()" type="button">Imprimir informe</button>
       <button class="btn ghost" onclick="cargarEjemplo()" type="button">Cargar ejemplo</button>
     </div>

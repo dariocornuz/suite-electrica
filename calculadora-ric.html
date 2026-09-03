@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Eléctrica RIC — Herramienta de Bolsillo para Electricistas</title>
+<meta name="description" content="Calculadora eléctrica profesional con fundamento en el Reglamento de Instalaciones Eléctricas de Consumo (RIC) y los Pliegos Técnicos Normativos de la SEC. Sección de conductores, caída de tensión, protecciones, puesta a tierra y llenado de tuberías. Ingeniero Darío Cornuz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3;
+  --panel:#ffffff;
+  --panel-alt:#f6f8fa;
+  --ink:#17242f;
+  --muted:#5b6a79;
+  --navy:#0d2b45;
+  --navy-2:#123a5c;
+  --blue:#1a5fa8;
+  --line:#d5dde5;
+  --ok:#1e8a4c;
+  --warn:#c99400;
+  --high:#d96c1e;
+  --crit:#c22f3d;
+  --amber:#b8860b;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,Segoe UI,Arial,sans-serif;
+  --disp:'Barlow Condensed','IBM Plex Sans',sans-serif;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(13,43,69,.06),0 4px 14px rgba(13,43,69,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+
+/* ===== Encabezado ===== */
+.topbar{background:var(--navy);color:#fff;position:relative}
+.topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--blue) 25% 50%,var(--amber) 50% 75%,var(--crit) 75% 100%)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand-mark svg{display:block}
+.brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(22px,4vw,32px);letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
+.brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
+.brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
+.top-actions{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:600 13.5px var(--sans);padding:9px 15px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
+.btn:hover{background:#f0f4f8}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#134d8a}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+
+/* ===== Estructura ===== */
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+section{margin-bottom:34px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin:0 0 4px}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px;color:var(--navy)}
+h3{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;color:var(--navy-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+
+/* ===== Aviso normativo ===== */
+.aviso{background:#fdf6df;border:1px solid #ecd98a;border-left:5px solid var(--amber);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;color:#5c4a08;line-height:1.6}
+.aviso strong{color:#3d3005}
+.aviso a{color:#3d3005}
+
+/* ===== Navegación de módulos ===== */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tab{font:600 13px var(--sans);padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--navy-2);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.tab .n{font-family:var(--mono);font-size:11px;background:var(--panel-alt);border-radius:999px;padding:1px 7px;color:var(--muted)}
+.tab:hover{background:#f0f4f8}
+.tab.activo{background:var(--navy);border-color:var(--navy);color:#fff}
+.tab.activo .n{background:rgba(255,255,255,.18);color:#fff}
+.modulo{display:none}
+.modulo.activo{display:block}
+
+/* ===== Formularios ===== */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.field .hint{display:block;font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-top:2px}
+.field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:400 14px var(--sans);color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+.actions-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+
+/* ===== Resultado ===== */
+.result-card{background:var(--navy);color:#eaf2f9;border-radius:var(--radius);padding:22px;border-left:6px solid var(--blue);box-shadow:var(--shadow);margin-top:18px}
+.result-card .rc-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fb2d1;margin-bottom:12px}
+.result-card .rc-val{font-family:var(--disp);font-weight:700;font-size:44px;line-height:1;letter-spacing:.02em}
+.result-card .rc-val small{font-size:.4em;font-weight:500;color:#9db8cf;margin-left:6px}
+.result-card .rc-sub{font-size:14.5px;font-weight:600;margin:6px 0 14px;color:#eaf2f9}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.14);font-size:13.5px}
+.rc-row .k{color:#9db8cf;text-transform:uppercase;letter-spacing:.07em;font-size:11.5px;font-family:var(--mono)}
+.rc-row .v{font-weight:600;text-align:right}
+.rc-estado{margin-top:14px;font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;border-radius:7px;background:rgba(255,255,255,.1);text-align:center}
+.rc-estado.ok{background:rgba(30,138,76,.28)}
+.rc-estado.crit{background:rgba(194,47,61,.32)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--sans);letter-spacing:.03em;padding:4px 11px;border-radius:999px;border:1px solid transparent;text-transform:uppercase}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.chip.ok{color:var(--ok);background:#e8f5ed;border-color:#bfe3cc}
+.chip.crit{color:var(--crit);background:#fbebed;border-color:#eec0c6}
+.chip.na{color:var(--muted);background:#eef1f4;border-color:#d8dee4}
+
+/* ===== Fundamento normativo ===== */
+details.mi{margin:16px 0 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-alt);font-size:13.5px;color:var(--ink)}
+details.mi summary{cursor:pointer;padding:10px 14px;font-weight:600;color:var(--blue);font-size:13px;user-select:none;list-style:none}
+details.mi summary::before{content:'§  ';font-weight:400}
+details.mi summary::-webkit-details-marker{display:none}
+details.mi[open] summary{border-bottom:1px solid var(--line)}
+details.mi .mi-body{padding:12px 14px 14px;line-height:1.6}
+details.mi .mi-body p{margin:0 0 8px}
+details.mi .mi-body p:last-child{margin:0}
+details.mi .mi-body ul{margin:6px 0 8px;padding-left:20px}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:7px 9px;border-bottom:2px solid var(--line)}
+table.tbl td{padding:6px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl td.num{font-family:var(--mono);text-align:right}
+table.tbl tr:last-child td{border-bottom:none}
+.tbl-wrap{overflow-x:auto}
+
+/* ===== Pie ===== */
+footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
+.foot-inner{max-width:1180px;margin:0 auto;padding:26px 22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.foot-inner .ver{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8fb2d1}
+.foot-inner strong{color:#fff}
+
+@media (max-width:640px){
+  .result-card .rc-val{font-size:36px}
+}
+@media print{
+  .topbar .top-actions,.tabs,.btn{display:none!important}
+  .modulo{display:block!important;page-break-after:always}
+  body{background:#fff}
+  .card,.result-card{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<!-- ================= ENCABEZADO ================= -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <path d="M17 2 6 17h8l-3 11 13-17h-8z" fill="#f2c94c"/>
+      </svg>
+    </div>
+    <div class="brand">
+      <h1>Calculadora Eléctrica RIC</h1>
+      <p class="sub">Cálculos recurrentes de terreno con fundamento en el RIC y los Pliegos Técnicos SEC</p>
+      <p class="autor">Ingeniero Darío Cornuz</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">Sistema DGA</a>
+      <button class="btn ghost" onclick="window.print()" type="button">Imprimir</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="aviso">
+  <div class="aviso">
+    <strong>Uso de referencia — no reemplaza el proyecto eléctrico.</strong>
+    El Reglamento de Instalaciones Eléctricas de Consumo (RIC) fue fijado por el Decreto Supremo N.º 8 del Ministerio de Economía, Fomento y Turismo, y se desarrolla técnicamente mediante los <strong>Pliegos Técnicos Normativos RIC</strong> dictados por la Superintendencia de Electricidad y Combustibles (SEC). Esta herramienta entrega valores de referencia calculados con criterios y tablas de uso habitual en el diseño de instalaciones RIC (equivalentes a la metodología IEC 60364-5-52 y a las fórmulas clásicas de puesta a tierra IEEE Std. 80). Verifique siempre el resultado contra el Pliego Técnico RIC vigente publicado en <a href="https://www.sec.cl" target="_blank" rel="noopener">www.sec.cl</a>, los datos del fabricante de los materiales y el criterio de un Instalador Eléctrico Autorizado. La instalación debe ser declarada ante la SEC por quien corresponda según su clase de licencia (TE1/TE2/TE3/TE4).
+  </div>
+</section>
+
+<section id="modulos">
+  <div class="kicker">Módulos de cálculo</div>
+  <h2>Herramienta de Bolsillo para Electricistas</h2>
+  <div class="tabs" role="tablist" aria-label="Módulos de cálculo">
+    <button class="tab activo" data-mod="ohm" type="button"><span class="n">01</span> Ohm y Potencia</button>
+    <button class="tab" data-mod="conductores" type="button"><span class="n">02</span> Sección de Conductor</button>
+    <button class="tab" data-mod="caida" type="button"><span class="n">03</span> Caída de Tensión</button>
+    <button class="tab" data-mod="protecciones" type="button"><span class="n">04</span> Protecciones</button>
+    <button class="tab" data-mod="tierra" type="button"><span class="n">05</span> Puesta a Tierra</button>
+    <button class="tab" data-mod="tuberia" type="button"><span class="n">06</span> Llenado de Tubería</button>
+  </div>
+
+  <!-- ============ 01 OHM Y POTENCIA ============ -->
+  <div class="modulo activo" id="mod-ohm">
+    <div class="card">
+      <h3>Ley de Ohm y Potencia Eléctrica</h3>
+      <div class="form-grid">
+        <div class="field"><label for="oh_sistema">Sistema</label>
+          <select id="oh_sistema">
+            <option value="mono">Monofásico (220 V)</option>
+            <option value="tri">Trifásico (380 V)</option>
+          </select>
+        </div>
+        <div class="field"><label for="oh_v">Tensión (V)</label><input id="oh_v" type="number" step="0.1" value="220"></div>
+        <div class="field"><label for="oh_p">Potencia (W)</label><input id="oh_p" type="number" step="1" placeholder="deje vacío si conoce la corriente"></div>
+        <div class="field"><label for="oh_i">Corriente (A)</label><input id="oh_i" type="number" step="0.01" placeholder="deje vacío si conoce la potencia"></div>
+        <div class="field"><label for="oh_fp">Factor de potencia (cos φ)</label><input id="oh_fp" type="number" step="0.01" min="0.1" max="1" value="1"></div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcOhm()" type="button">Calcular</button></div>
+      <div class="result-card" id="oh_out" hidden></div>
+      <details class="mi"><summary>Fundamento y fórmulas</summary>
+        <div class="mi-body">
+          <p><strong>Monofásico:</strong> P = V · I · cos φ</p>
+          <p><strong>Trifásico:</strong> P = √3 · V<sub>línea</sub> · I · cos φ</p>
+          <p>Complete potencia <em>o</em> corriente; el otro valor se despeja automáticamente. Estas relaciones son la base de todo el resto de los módulos (dimensionamiento de conductores, protecciones y caída de tensión que exige el RIC en baja tensión).</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ 02 SECCIÓN DE CONDUCTOR ============ -->
+  <div class="modulo" id="mod-conductores">
+    <div class="card">
+      <h3>Sección de Conductor por Corriente Admisible</h3>
+      <div class="form-grid">
+        <div class="field"><label for="co_ib">Corriente de diseño Ib (A)</label><input id="co_ib" type="number" step="0.1" value="20"></div>
+        <div class="field"><label for="co_metodo">Método de instalación</label>
+          <select id="co_metodo">
+            <option value="A1">Empotrado en muro (ducto/tubería embutida)</option>
+            <option value="B1" selected>Tubería sobre muro / cielo</option>
+            <option value="C">Bandeja o al aire, unipolares separados</option>
+          </select>
+        </div>
+        <div class="field"><label for="co_temp">Temperatura ambiente (°C)</label><input id="co_temp" type="number" step="1" value="30"></div>
+        <div class="field"><label for="co_circ">N.º de circuitos agrupados</label><input id="co_circ" type="number" step="1" min="1" value="1"></div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcConductor()" type="button">Calcular sección mínima</button></div>
+      <div class="result-card" id="co_out" hidden></div>
+      <details class="mi"><summary>Fundamento y tabla utilizada</summary>
+        <div class="mi-body">
+          <p>La corriente admisible del conductor (Iz) debe ser mayor o igual que la corriente corregida de diseño, aplicando los factores de corrección por temperatura ambiente y por agrupamiento de circuitos — criterio general de los Pliegos Técnicos RIC (capítulo de conductores y canalizaciones) y de IEC 60364-5-52. Los valores base de la tabla corresponden a conductores de cobre, aislación PVC (70 °C), a 30 °C ambiente, y son <strong>de referencia</strong>: confirme siempre la ampacidad real con la ficha técnica del fabricante del conductor.</p>
+          <div class="tbl-wrap"><table class="tbl" id="co_tabla_ref"></table></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ 03 CAÍDA DE TENSIÓN ============ -->
+  <div class="modulo" id="mod-caida">
+    <div class="card">
+      <h3>Caída de Tensión en el Circuito</h3>
+      <div class="form-grid">
+        <div class="field"><label for="cd_sistema">Sistema</label>
+          <select id="cd_sistema">
+            <option value="mono">Monofásico (220 V)</option>
+            <option value="tri">Trifásico (380 V)</option>
+          </select>
+        </div>
+        <div class="field"><label for="cd_v">Tensión nominal (V)</label><input id="cd_v" type="number" step="0.1" value="220"></div>
+        <div class="field"><label for="cd_i">Corriente (A)</label><input id="cd_i" type="number" step="0.1" value="20"></div>
+        <div class="field"><label for="cd_l">Longitud del tramo (m)</label><input id="cd_l" type="number" step="0.1" value="25"></div>
+        <div class="field"><label for="cd_s">Sección del conductor (mm²)</label>
+          <select id="cd_s"></select>
+        </div>
+        <div class="field"><label for="cd_mat">Material</label>
+          <select id="cd_mat">
+            <option value="cu">Cobre</option>
+            <option value="al">Aluminio</option>
+          </select>
+        </div>
+        <div class="field"><label for="cd_fp">Factor de potencia (cos φ)</label><input id="cd_fp" type="number" step="0.01" min="0.1" max="1" value="0.95"></div>
+        <div class="field"><label for="cd_tramo">Tramo evaluado</label>
+          <select id="cd_tramo">
+            <option value="alim">Alimentador (empalme → tablero)</option>
+            <option value="circ">Circuito derivado (tablero → artefacto)</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcCaida()" type="button">Calcular caída de tensión</button></div>
+      <div class="result-card" id="cd_out" hidden></div>
+      <details class="mi"><summary>Fundamento y fórmulas</summary>
+        <div class="mi-body">
+          <p><strong>Monofásico:</strong> ΔV = 2 · ρ · L · I · cos φ / S &nbsp;·&nbsp; <strong>Trifásico:</strong> ΔV = √3 · ρ · L · I · cos φ / S</p>
+          <p>Resistividad usada: cobre ρ = 0,0178 Ω·mm²/m, aluminio ρ = 0,0294 Ω·mm²/m (valor aproximado a temperatura de servicio, no incluye reactancia — despreciable para secciones habituales de baja tensión).</p>
+          <p>Criterio de referencia usado habitualmente en proyectos RIC/SEC: caída de tensión total desde el empalme hasta el artefacto más desfavorable ≤ <strong>5 %</strong>, normalmente repartida en ≤ 3 % en el alimentador y ≤ 2 % en el circuito derivado. Verifique el límite exacto vigente en el Pliego Técnico RIC aplicable a su tipo de instalación.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ 04 PROTECCIONES ============ -->
+  <div class="modulo" id="mod-protecciones">
+    <div class="card">
+      <h3>Selección de Protecciones (Interruptor Automático y Diferencial)</h3>
+      <div class="form-grid">
+        <div class="field"><label for="pr_ib">Corriente de diseño Ib (A)</label><input id="pr_ib" type="number" step="0.1" value="20"></div>
+        <div class="field"><label for="pr_iz">Corriente admisible del conductor Iz (A)</label><input id="pr_iz" type="number" step="0.1" value="24"></div>
+        <div class="field"><label for="pr_uso">Tipo de circuito</label>
+          <select id="pr_uso">
+            <option value="alumbrado">Alumbrado</option>
+            <option value="enchufes" selected>Enchufes / uso general</option>
+            <option value="humedo">Baño, cocina, exterior, patio</option>
+            <option value="fuerza">Fuerza motriz / especial</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcProteccion()" type="button">Determinar protección</button></div>
+      <div class="result-card" id="pr_out" hidden></div>
+      <details class="mi"><summary>Fundamento y criterio de coordinación</summary>
+        <div class="mi-body">
+          <p>Regla de coordinación protección–conductor exigida por el RIC (capítulo de protecciones contra sobrecorriente): <strong>Ib ≤ In ≤ Iz</strong>, donde Ib es la corriente de diseño del circuito, In la corriente nominal del interruptor automático elegido (serie normalizada IEC 60898: 6, 10, 16, 20, 25, 32, 40, 50, 63 A…) e Iz la corriente admisible del conductor ya corregida por temperatura y agrupamiento.</p>
+          <p>Los Pliegos Técnicos RIC exigen protección diferencial (interruptor diferencial, DDR) de alta sensibilidad — <strong>30 mA</strong> — para circuitos de enchufes de uso general y para todo circuito en baños, cocinas, exteriores o recintos húmedos, como protección contra contactos indirectos y directos.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ 05 PUESTA A TIERRA ============ -->
+  <div class="modulo" id="mod-tierra">
+    <div class="card">
+      <h3>Resistencia de Puesta a Tierra (Jabalina Simple)</h3>
+      <div class="form-grid">
+        <div class="field"><label for="tp_rho">Resistividad del terreno ρ (Ω·m)
+          <span class="hint">Húmedo/arcilla ≈ 50–100, seco/arenoso ≈ 300–1000</span></label>
+          <input id="tp_rho" type="number" step="1" value="150"></div>
+        <div class="field"><label for="tp_l">Longitud de la jabalina L (m)</label><input id="tp_l" type="number" step="0.1" value="2.4"></div>
+        <div class="field"><label for="tp_d">Diámetro de la jabalina (mm)</label><input id="tp_d" type="number" step="0.1" value="16"></div>
+        <div class="field"><label for="tp_max">Resistencia máxima objetivo (Ω)</label><input id="tp_max" type="number" step="1" value="25"></div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcTierra()" type="button">Calcular resistencia</button></div>
+      <div class="result-card" id="tp_out" hidden></div>
+      <details class="mi"><summary>Fundamento y fórmula</summary>
+        <div class="mi-body">
+          <p>Fórmula de Dwight para un electrodo vertical (jabalina) en suelo homogéneo, de uso estándar en ingeniería de puesta a tierra (IEEE Std. 80), utilizada como referencia de diseño previa a la medición de terreno exigida por el Pliego Técnico RIC de puesta a tierra de protección:</p>
+          <p style="font-family:var(--mono);font-size:14px">R = (ρ / 2πL) · [ln(8L/d) − 1]</p>
+          <p>La resistividad del terreno varía fuertemente con la humedad y el tipo de suelo: el valor calculado es una <strong>estimación</strong>. El RIC exige verificar el valor final mediante medición directa en terreno (método de Wenner u otro instrumento de telurómetro) y adoptar electrodos adicionales en paralelo, jabalinas más largas o mejoramiento químico del suelo si no se alcanza el valor objetivo. Para instalaciones con protección diferencial de 30 mA, el límite de resistencia puede relajarse, pero se recomienda mantener un valor bajo por seguridad y por coordinación con otras puestas a tierra del sistema.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ 06 LLENADO DE TUBERÍA ============ -->
+  <div class="modulo" id="mod-tuberia">
+    <div class="card">
+      <h3>Llenado de Tubería / Canalización</h3>
+      <div class="form-grid">
+        <div class="field"><label for="tb_n">N.º de conductores en la tubería</label><input id="tb_n" type="number" step="1" min="1" value="3"></div>
+        <div class="field"><label for="tb_d">Diámetro exterior por conductor (mm)</label><input id="tb_d" type="number" step="0.1" value="4.5"
+          ></div>
+        <div class="field"><label for="tb_tipo">Diámetro nominal de tubería a evaluar (mm)</label>
+          <select id="tb_tipo"></select>
+        </div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcTuberia()" type="button">Calcular porcentaje de llenado</button></div>
+      <div class="result-card" id="tb_out" hidden></div>
+      <details class="mi"><summary>Fundamento y criterio</summary>
+        <div class="mi-body">
+          <p>Criterio de llenado máximo por tubería según el número de conductores que contiene, de uso habitual en las canalizaciones RIC (equivalente al criterio de NEC Cap. 9 / IEC): 1 conductor ≤ 53 %, 2 conductores ≤ 31 %, 3 o más conductores ≤ 40 % del área interior de la tubería, para permitir el tendido y la disipación de calor.</p>
+          <p>El diámetro exterior real de cada conductor depende del fabricante y del tipo de aislación: use el dato de la ficha técnica del cable para un resultado preciso.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 <strong>Ingeniero Darío Cornuz</strong> · Calculadora Eléctrica RIC — Herramienta de Bolsillo para Electricistas</span>
+    <span class="ver">Versión 1.0 · GitHub Pages · Sin servidores ni bases de datos externas</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   CALCULADORA ELÉCTRICA RIC — Ingeniero Darío Cornuz — Versión 1.0
+   Módulos: Ohm/Potencia · Sección de conductor · Caída de tensión
+            Protecciones · Puesta a tierra · Llenado de tubería
+   Valores de referencia: uso habitual en proyectos RIC/SEC (Chile),
+   equivalentes a IEC 60364-5-52 (ampacidad) e IEEE Std. 80 (puesta a tierra).
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+
+/* ---------- Navegación de módulos ---------- */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('activo'));
+  document.querySelectorAll('.modulo').forEach(x => x.classList.remove('activo'));
+  t.classList.add('activo');
+  $('mod-' + t.dataset.mod).classList.add('activo');
+}));
+
+/* =====================================================================
+   TABLAS DE REFERENCIA — AMPACIDAD DE CONDUCTORES
+   Cobre, aislación PVC (70°C), 30°C ambiente, 2 conductores cargados.
+   Método A1: empotrado en muro | B1: tubería sobre muro | C: bandeja/aire
+   ===================================================================== */
+const SECCIONES = [1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240];
+const AMPACIDAD = {
+  A1:[13.5,18,24,31,42,56,73,89,108,136,164,188,216,245,286],
+  B1:[15.5,21,28,36,50,68,89,110,134,171,207,239,262,296,346],
+  C: [17.5,24,32,41,57,76,96,119,144,184,223,259,299,341,403]
+};
+/* Factor de corrección por temperatura ambiente (aislación PVC) */
+const FACTOR_TEMP = {10:1.22,15:1.17,20:1.12,25:1.06,30:1.00,35:0.94,40:0.87,45:0.79,50:0.71,55:0.61,60:0.50};
+function factorTemperatura(t){
+  const claves = Object.keys(FACTOR_TEMP).map(Number).sort((a,b)=>a-b);
+  if(t<=claves[0]) return FACTOR_TEMP[claves[0]];
+  if(t>=claves[claves.length-1]) return FACTOR_TEMP[claves[claves.length-1]];
+  for(let i=0;i<claves.length-1;i++){
+    if(t>=claves[i] && t<=claves[i+1]){
+      const t0=claves[i], t1=claves[i+1], f0=FACTOR_TEMP[t0], f1=FACTOR_TEMP[t1];
+      return f0 + (f1-f0)*(t-t0)/(t1-t0);
+    }
+  }
+  return 1;
+}
+/* Factor de corrección por agrupamiento de circuitos */
+const FACTOR_AGRUP = {1:1.00,2:0.80,3:0.70,4:0.65,5:0.60,6:0.57,7:0.54,8:0.52,9:0.50};
+function factorAgrupamiento(n){
+  if(n<=1) return 1;
+  if(n>=9) return 0.45;
+  return FACTOR_AGRUP[n];
+}
+
+function poblarTablaConductores(){
+  const metodo = $('co_metodo') ? $('co_metodo').value : 'B1';
+  const tbl = $('co_tabla_ref');
+  let html = '<thead><tr><th>Sección (mm²)</th><th>Iz referencia (A)</th></tr></thead><tbody>';
+  SECCIONES.forEach((s,i) => { html += `<tr><td>${s}</td><td class="num">${AMPACIDAD[metodo][i]}</td></tr>`; });
+  tbl.innerHTML = html + '</tbody>';
+}
+$('co_metodo').addEventListener('change', poblarTablaConductores);
+poblarTablaConductores();
+
+/* Poblar el selector de sección del módulo de caída de tensión */
+(function poblarSelectorSecciones(){
+  const sel = $('cd_s');
+  sel.innerHTML = SECCIONES.map(s => `<option value="${s}"${s===6?' selected':''}>${s} mm²</option>`).join('');
+})();
+
+/* Poblar diámetros nominales típicos de tubería (mm) */
+(function poblarTuberias(){
+  const diam = [16,20,25,32,40,50,63];
+  $('tb_tipo').innerHTML = diam.map(d => `<option value="${d}"${d===20?' selected':''}>${d} mm</option>`).join('');
+})();
+
+/* =====================================================================
+   01 · LEY DE OHM Y POTENCIA
+   ===================================================================== */
+function calcOhm(){
+  const sistema = $('oh_sistema').value;
+  const v = Number($('oh_v').value) || 0;
+  const fp = Number($('oh_fp').value) || 1;
+  let p = $('oh_p').value === '' ? null : Number($('oh_p').value);
+  let i = $('oh_i').value === '' ? null : Number($('oh_i').value);
+  const k = sistema === 'tri' ? Math.sqrt(3) : 1;
+  if(p === null && i === null){ alert('Ingrese potencia o corriente.'); return; }
+  if(p === null) p = k * v * i * fp;
+  else if(i === null) i = p / (k * v * fp);
+  const out = $('oh_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">Resultado — ${sistema==='tri' ? 'Sistema trifásico' : 'Sistema monofásico'}</div>
+    <div class="rc-val">${p.toFixed(0)}<small>W</small></div>
+    <div class="rc-sub">Potencia activa</div>
+    <div class="rc-row"><span class="k">Corriente</span><span class="v">${i.toFixed(2)} A</span></div>
+    <div class="rc-row"><span class="k">Tensión</span><span class="v">${v.toFixed(0)} V</span></div>
+    <div class="rc-row"><span class="k">Cos φ</span><span class="v">${fp.toFixed(2)}</span></div>
+    <div class="rc-row"><span class="k">Potencia aparente</span><span class="v">${(p/fp).toFixed(0)} VA</span></div>`;
+}
+
+/* =====================================================================
+   02 · SECCIÓN DE CONDUCTOR
+   ===================================================================== */
+function calcConductor(){
+  const ib = Number($('co_ib').value) || 0;
+  const metodo = $('co_metodo').value;
+  const ft = factorTemperatura(Number($('co_temp').value) || 30);
+  const fa = factorAgrupamiento(Number($('co_circ').value) || 1);
+  const factor = ft * fa;
+  const izRequerida = factor > 0 ? ib / factor : Infinity;
+  const tabla = AMPACIDAD[metodo];
+  let idx = tabla.findIndex(iz => iz >= izRequerida);
+  const out = $('co_out');
+  out.hidden = false;
+  if(idx === -1){
+    out.innerHTML = `
+      <div class="rc-kicker">Resultado</div>
+      <div class="rc-val" style="font-size:28px">Fuera de tabla</div>
+      <div class="rc-sub">La corriente corregida (${izRequerida.toFixed(1)} A) supera el mayor conductor de referencia (${tabla[tabla.length-1]} A, ${SECCIONES[SECCIONES.length-1]} mm²)</div>
+      <div class="rc-estado crit">Evalúe con tablas de secciones mayores o divida la carga</div>`;
+    return;
+  }
+  const seccion = SECCIONES[idx];
+  const izTabla = tabla[idx];
+  out.innerHTML = `
+    <div class="rc-kicker">Sección mínima de referencia</div>
+    <div class="rc-val">${seccion}<small>mm²</small></div>
+    <div class="rc-sub">Cobre — método de instalación ${metodo}</div>
+    <div class="rc-row"><span class="k">Ib (corriente de diseño)</span><span class="v">${ib.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Factor temperatura</span><span class="v">${ft.toFixed(2)}</span></div>
+    <div class="rc-row"><span class="k">Factor agrupamiento</span><span class="v">${fa.toFixed(2)}</span></div>
+    <div class="rc-row"><span class="k">Iz requerida (corregida)</span><span class="v">${izRequerida.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Iz del conductor elegido</span><span class="v">${izTabla} A</span></div>
+    <div class="rc-estado ok">Iz ≥ Ib corregida — cumple el criterio de ampacidad</div>`;
+}
+
+/* =====================================================================
+   03 · CAÍDA DE TENSIÓN
+   ===================================================================== */
+const RHO = {cu:0.0178, al:0.0294};
+function calcCaida(){
+  const sistema = $('cd_sistema').value;
+  const v = Number($('cd_v').value) || 1;
+  const i = Number($('cd_i').value) || 0;
+  const l = Number($('cd_l').value) || 0;
+  const s = Number($('cd_s').value) || 1;
+  const fp = Number($('cd_fp').value) || 1;
+  const rho = RHO[$('cd_mat').value];
+  const tramo = $('cd_tramo').value;
+  const k = sistema === 'tri' ? Math.sqrt(3) : 2;
+  const deltaV = k * rho * l * i * fp / s;
+  const deltaPct = (deltaV / v) * 100;
+  const limite = tramo === 'alim' ? 3 : 2;
+  const cumple = deltaPct <= limite;
+  const out = $('cd_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">Caída de tensión calculada</div>
+    <div class="rc-val">${deltaPct.toFixed(2)}<small>%</small></div>
+    <div class="rc-sub">${deltaV.toFixed(2)} V sobre ${v.toFixed(0)} V nominales</div>
+    <div class="rc-row"><span class="k">Tramo</span><span class="v">${tramo==='alim' ? 'Alimentador' : 'Circuito derivado'}</span></div>
+    <div class="rc-row"><span class="k">Límite de referencia</span><span class="v">≤ ${limite} %</span></div>
+    <div class="rc-row"><span class="k">Sección / material</span><span class="v">${s} mm² · ${$('cd_mat').value==='cu'?'Cobre':'Aluminio'}</span></div>
+    <div class="rc-estado ${cumple?'ok':'crit'}">${cumple ? 'Dentro del límite de referencia' : 'Excede el límite — aumente la sección o reduzca la longitud'}</div>`;
+}
+
+/* =====================================================================
+   04 · PROTECCIONES
+   ===================================================================== */
+const BREAKERS = [6,10,16,20,25,32,40,50,63,80,100,125];
+function calcProteccion(){
+  const ib = Number($('pr_ib').value) || 0;
+  const iz = Number($('pr_iz').value) || 0;
+  const uso = $('pr_uso').value;
+  const out = $('pr_out');
+  out.hidden = false;
+  const candidato = BREAKERS.find(b => b >= ib && b <= iz);
+  const ddrRequerido = (uso === 'enchufes' || uso === 'humedo');
+  if(!candidato){
+    out.innerHTML = `
+      <div class="rc-kicker">Resultado</div>
+      <div class="rc-val" style="font-size:26px">Sin coordinación válida</div>
+      <div class="rc-sub">No existe In normalizado que cumpla Ib ≤ In ≤ Iz con los valores ingresados</div>
+      <div class="rc-estado crit">Revise Ib e Iz: probablemente Iz &lt; Ib, o falta margen entre ambos</div>`;
+    return;
+  }
+  out.innerHTML = `
+    <div class="rc-kicker">Interruptor automático</div>
+    <div class="rc-val">${candidato}<small>A</small></div>
+    <div class="rc-sub">Corriente nominal In seleccionada</div>
+    <div class="rc-row"><span class="k">Ib (diseño)</span><span class="v">${ib.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Iz (conductor)</span><span class="v">${iz.toFixed(1)} A</span></div>
+    <div class="rc-row"><span class="k">Coordinación</span><span class="v">Ib ≤ In ≤ Iz ✓</span></div>
+    <div class="rc-row"><span class="k">Protección diferencial</span><span class="v">${ddrRequerido ? 'DDR 30 mA obligatorio' : 'Según diseño general del tablero'}</span></div>
+    <div class="rc-estado ${ddrRequerido?'crit':'ok'}">${ddrRequerido ? 'Circuito de riesgo de contacto directo — exige diferencial de 30 mA' : 'Verifique diferencial general del tablero'}</div>`;
+}
+
+/* =====================================================================
+   05 · PUESTA A TIERRA
+   ===================================================================== */
+function calcTierra(){
+  const rho = Number($('tp_rho').value) || 0;
+  const l = Number($('tp_l').value) || 0.01;
+  const dMm = Number($('tp_d').value) || 1;
+  const d = dMm / 1000;
+  const max = Number($('tp_max').value) || 25;
+  const r = (rho / (2 * Math.PI * l)) * (Math.log(8 * l / d) - 1);
+  const cumple = r <= max;
+  const out = $('tp_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">Resistencia de puesta a tierra estimada</div>
+    <div class="rc-val">${r.toFixed(1)}<small>Ω</small></div>
+    <div class="rc-sub">Jabalina de ${l} m, Ø ${dMm} mm, ρ = ${rho} Ω·m</div>
+    <div class="rc-row"><span class="k">Objetivo</span><span class="v">≤ ${max} Ω</span></div>
+    <div class="rc-estado ${cumple?'ok':'crit'}">${cumple ? 'Estimación dentro del objetivo' : 'Estimación sobre el objetivo — agregue jabalinas en paralelo o mejore el terreno'}</div>`;
+}
+
+/* =====================================================================
+   06 · LLENADO DE TUBERÍA
+   ===================================================================== */
+function calcTuberia(){
+  const n = Number($('tb_n').value) || 1;
+  const dCond = Number($('tb_d').value) || 0;
+  const dTubo = Number($('tb_tipo').value) || 1;
+  const areaCond = Math.PI * Math.pow(dCond/2,2) * n;
+  const areaTubo = Math.PI * Math.pow(dTubo/2,2);
+  const pct = (areaCond / areaTubo) * 100;
+  const limite = n === 1 ? 53 : (n === 2 ? 31 : 40);
+  const cumple = pct <= limite;
+  const out = $('tb_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">Porcentaje de llenado</div>
+    <div class="rc-val">${pct.toFixed(1)}<small>%</small></div>
+    <div class="rc-sub">${n} conductor(es) de Ø ${dCond} mm en tubería de ${dTubo} mm</div>
+    <div class="rc-row"><span class="k">Límite de referencia</span><span class="v">≤ ${limite} %</span></div>
+    <div class="rc-estado ${cumple?'ok':'crit'}">${cumple ? 'Llenado dentro del límite' : 'Excede el límite — use tubería de mayor diámetro'}</div>`;
+}
+</script>
+</body>
+</html>
