@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist de Seguridad Eléctrica NFPA 70E</title>
+<meta name="description" content="Checklist interactivo de seguridad eléctrica según NFPA 70E: planificación, bloqueo y etiquetado (LOTO), equipo de protección personal y verificación final. Genera un reporte imprimible. Ingeniero Darío Cornuz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3;--panel:#ffffff;--panel-alt:#f6f8fa;--ink:#17242f;--muted:#5b6a79;
+  --navy:#0d2b45;--navy-2:#123a5c;--blue:#1a5fa8;--line:#d5dde5;
+  --ok:#1e8a4c;--warn:#c99400;--high:#d96c1e;--crit:#c22f3d;--amber:#b8860b;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,Segoe UI,Arial,sans-serif;
+  --disp:'Barlow Condensed','IBM Plex Sans',sans-serif;
+  --radius:10px;--shadow:0 1px 2px rgba(13,43,69,.06),0 4px 14px rgba(13,43,69,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+.topbar{background:var(--navy);color:#fff;position:relative}
+.topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--blue) 25% 50%,var(--amber) 50% 75%,var(--crit) 75% 100%)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.6vw,30px);letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
+.brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
+.brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
+.top-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 12.5px var(--sans);padding:8px 13px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
+.btn:hover{background:#f0f4f8}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+section{margin-bottom:34px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin:0 0 4px}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px;color:var(--navy)}
+h3{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;color:var(--navy-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.aviso{background:#fdf6df;border:1px solid #ecd98a;border-left:5px solid var(--amber);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;color:#5c4a08;line-height:1.6}
+.aviso strong{color:#3d3005}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px 14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:400 14px var(--sans);color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+.grupo{margin-top:22px}
+.grupo h3{display:flex;align-items:center;gap:10px}
+.grupo h3 .cnt{font-family:var(--mono);font-size:11px;background:var(--panel-alt);border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted);text-transform:none;letter-spacing:0}
+.item{display:flex;align-items:flex-start;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:none}
+.item input[type=checkbox]{width:18px;height:18px;margin-top:2px;accent-color:var(--blue);flex:0 0 auto}
+.item label{font-size:14px;cursor:pointer}
+.item .oblig{font-size:11px;color:var(--crit);font-family:var(--mono);margin-left:6px}
+.estado-bar{position:sticky;top:0;z-index:5;margin:-4px 0 18px;padding:12px 16px;border-radius:var(--radius);font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;text-align:center;border:1px solid var(--line)}
+.estado-bar.pend{background:#fdf6df;color:#8a6a00;border-color:#ecd98a}
+.estado-bar.ok{background:#e8f5ed;color:#1e8a4c;border-color:#bfe3cc}
+.actions-row{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
+.foot-inner{max-width:1180px;margin:0 auto;padding:26px 22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.foot-inner .ver{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8fb2d1}
+.foot-inner strong{color:#fff}
+@media print{
+  .topbar .top-actions,.btn,.estado-bar{display:none!important}
+  body{background:#fff}
+  .card{box-shadow:none}
+  .item input[type=checkbox]{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #reporteEstado{display:block!important;margin-bottom:16px;padding:10px;border:2px solid #000;font-weight:700;text-align:center}
+}
+#reporteEstado{display:none}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><path d="M17 2 6 17h8l-3 11 13-17h-8z" fill="#f2c94c"/></svg>
+    </div>
+    <div class="brand">
+      <h1>Checklist NFPA 70E</h1>
+      <p class="sub">Verificación previa a trabajos eléctricos — planificación, LOTO, EPP y verificación final</p>
+      <p class="autor">Ingeniero Darío Cornuz</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">Sistema DGA</a>
+      <a class="btn ghost" href="calculadora-ric.html">Calculadora RIC</a>
+      <a class="btn ghost" href="calculadora-nec.html">Parámetros NEC</a>
+      <a class="btn ghost" href="curvas-proteccion.html">Curvas de Protección</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="aviso">
+  <div class="aviso">
+    <strong>Uso de referencia.</strong> Este checklist resume prácticas generales de <strong>NFPA 70E</strong> (Standard for Electrical Safety in the Workplace) para verificar antes de intervenir un equipo eléctrico. No reemplaza el Análisis de Riesgo Eléctrico específico del sitio, el permiso de trabajo formal, ni la determinación de la categoría de EPP por incidente energético (Tabla 130.7(C)(15)(a) o estudio de arc flash del equipo). Complételo junto con el procedimiento de bloqueo y etiquetado (LOTO) vigente en su instalación.
+  </div>
+</section>
+
+<section id="checklist">
+  <div class="kicker">Verificación previa al trabajo</div>
+  <h2>Checklist de Seguridad Eléctrica</h2>
+
+  <div id="reporteEstado"></div>
+  <div class="estado-bar pend" id="estadoBar">0 de 0 ítems completados</div>
+
+  <div class="card">
+    <h3>Datos de la tarea</h3>
+    <div class="form-grid">
+      <div class="field"><label for="t_empresa">Empresa / instalación</label><input id="t_empresa" type="text"></div>
+      <div class="field"><label for="t_equipo">Equipo / ubicación</label><input id="t_equipo" type="text"></div>
+      <div class="field"><label for="t_fecha">Fecha</label><input id="t_fecha" type="date"></div>
+      <div class="field"><label for="t_resp">Responsable / trabajador calificado</label><input id="t_resp" type="text"></div>
+      <div class="field"><label for="t_tipo">Tipo de trabajo</label>
+        <select id="t_tipo">
+          <option value="loto">Trabajo desenergizado con bloqueo y etiquetado (LOTO)</option>
+          <option value="cerca">Trabajo cerca de partes energizadas expuestas (sin contacto directo)</option>
+          <option value="diag">Diagnóstico / medición con equipo energizado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grupo">
+      <h3>Planificación y permisos <span class="cnt" data-grupo="plan"></span></h3>
+      <div class="item"><input type="checkbox" id="c1"><label for="c1">Se realizó el análisis de riesgo eléctrico / charla de seguridad (Job Safety Briefing) antes de iniciar<span class="oblig">obligatorio</span></label></div>
+      <div class="item"><input type="checkbox" id="c2"><label for="c2">Permiso de trabajo eléctrico autorizado y firmado</label></div>
+      <div class="item"><input type="checkbox" id="c3"><label for="c3">Categoría de riesgo de arco eléctrico y límites de aproximación determinados para esta tarea<span class="oblig">obligatorio</span></label></div>
+      <div class="item"><input type="checkbox" id="c4"><label for="c4">Se evaluó si el trabajo puede realizarse desenergizado (NFPA 70E exige justificar el trabajo energizado)</label></div>
+    </div>
+
+    <div class="grupo">
+      <h3>Bloqueo y etiquetado — LOTO <span class="cnt" data-grupo="loto"></span></h3>
+      <div class="item"><input type="checkbox" id="c5"><label for="c5">Todas las fuentes de energía del equipo identificadas (eléctrica, almacenada, otras)</label></div>
+      <div class="item"><input type="checkbox" id="c6"><label for="c6">Dispositivos de bloqueo y tarjetas de etiquetado personal aplicados<span class="oblig">obligatorio</span></label></div>
+      <div class="item"><input type="checkbox" id="c7"><label for="c7">Ausencia de tensión verificada con secuencia probar-medir-probar (equipo probado antes y después de la medición)<span class="oblig">obligatorio</span></label></div>
+      <div class="item"><input type="checkbox" id="c8"><label for="c8">Puesta a tierra temporal instalada si corresponde por procedimiento del sitio</label></div>
+    </div>
+
+    <div class="grupo">
+      <h3>Equipo de protección personal (EPP) <span class="cnt" data-grupo="epp"></span></h3>
+      <div class="item"><input type="checkbox" id="c9"><label for="c9">EPP contra arco eléctrico acorde a la categoría determinada (ropa FR, careta/casco de arco)<span class="oblig">obligatorio</span></label></div>
+      <div class="item"><input type="checkbox" id="c10"><label for="c10">Guantes dieléctricos con fecha de prueba vigente, protector de cuero sobre el guante</label></div>
+      <div class="item"><input type="checkbox" id="c11"><label for="c11">Calzado dieléctrico / aislante en buen estado</label></div>
+      <div class="item"><input type="checkbox" id="c12"><label for="c12">Herramientas aisladas clasificadas para la tensión de trabajo</label></div>
+    </div>
+
+    <div class="grupo">
+      <h3>Verificación final <span class="cnt" data-grupo="final"></span></h3>
+      <div class="item"><input type="checkbox" id="c13"><label for="c13">Instrumento de medición de categoría CAT adecuada a la tensión y ambiente del circuito</label></div>
+      <div class="item"><input type="checkbox" id="c14"><label for="c14">Área de trabajo delimitada (barreras / límite de aproximación restringido)</label></div>
+      <div class="item"><input type="checkbox" id="c15"><label for="c15">Supervisor / persona a cargo informado del inicio del trabajo</label></div>
+      <div class="item"><input type="checkbox" id="c16"><label for="c16">Plan de emergencia y vía de escape conocidos por el equipo de trabajo</label></div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn primary" onclick="window.print()" type="button">Generar reporte / Imprimir</button>
+      <button class="btn ghost" style="color:var(--ink);border-color:var(--line)" onclick="reiniciar()" type="button">Reiniciar checklist</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 <strong>Ingeniero Darío Cornuz</strong> · Suite Eléctrica — Checklist NFPA 70E</span>
+    <span class="ver">Versión 1.0 · GitHub Pages · Sin servidores ni bases de datos externas</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const CHECKS = Array.from(document.querySelectorAll('.item input[type=checkbox]'));
+const OBLIGATORIOS = ['c1','c3','c6','c7','c9'];
+
+function actualizarEstado(){
+  const marcados = CHECKS.filter(c => c.checked).length;
+  const bar = $('estadoBar');
+  bar.textContent = `${marcados} de ${CHECKS.length} ítems completados`;
+  const faltanObligatorios = OBLIGATORIOS.filter(id => !$(id).checked);
+  const completo = marcados === CHECKS.length;
+  bar.className = 'estado-bar ' + (completo ? 'ok' : 'pend');
+
+  const rep = $('reporteEstado');
+  if(faltanObligatorios.length > 0){
+    rep.innerHTML = `NO LISTO PARA TRABAJAR — faltan ${faltanObligatorios.length} ítem(s) obligatorio(s) sin completar`;
+  } else if(!completo){
+    rep.innerHTML = `ÍTEMS OBLIGATORIOS COMPLETOS — ${CHECKS.length - marcados} ítem(s) adicionales pendientes`;
+  } else {
+    rep.innerHTML = `LISTO PARA TRABAJAR — checklist completo (${marcados}/${CHECKS.length})`;
+  }
+}
+
+CHECKS.forEach(c => c.addEventListener('change', actualizarEstado));
+actualizarEstado();
+
+function reiniciar(){
+  if(!confirm('¿Reiniciar el checklist y borrar los datos ingresados?')) return;
+  CHECKS.forEach(c => c.checked = false);
+  ['t_empresa','t_equipo','t_fecha','t_resp'].forEach(id => $(id).value = '');
+  $('t_tipo').selectedIndex = 0;
+  actualizarEstado();
+}
+</script>
+</body>
+</html>
