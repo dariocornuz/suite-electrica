@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analizador de Calidad de Energía</title>
+<meta name="description" content="Analizador educativo de calidad de energía: distorsión armónica total (THD), factor de potencia verdadero vs. de desplazamiento, factor de cresta y comparación con límites de referencia IEEE 519. Ingeniero Darío Cornuz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3;--panel:#ffffff;--panel-alt:#f6f8fa;--ink:#17242f;--muted:#5b6a79;
+  --navy:#0d2b45;--navy-2:#123a5c;--blue:#1a5fa8;--line:#d5dde5;
+  --ok:#1e8a4c;--warn:#c99400;--high:#d96c1e;--crit:#c22f3d;--amber:#b8860b;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,Segoe UI,Arial,sans-serif;
+  --disp:'Barlow Condensed','IBM Plex Sans',sans-serif;
+  --radius:10px;--shadow:0 1px 2px rgba(13,43,69,.06),0 4px 14px rgba(13,43,69,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+.topbar{background:var(--navy);color:#fff;position:relative}
+.topbar::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--ok) 0 25%,var(--blue) 25% 50%,var(--amber) 50% 75%,var(--crit) 75% 100%)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.6vw,30px);letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
+.brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
+.brand .autor{margin-top:2px;font-family:var(--mono);font-size:12px;color:#8fb2d1;text-transform:uppercase;letter-spacing:.14em}
+.top-actions{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.btn{font:600 12px var(--sans);padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s;text-decoration:none}
+.btn:hover{background:#f0f4f8}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+section{margin-bottom:34px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin:0 0 4px}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px;color:var(--navy)}
+h3{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;color:var(--navy-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.aviso{background:#fdf6df;border:1px solid #ecd98a;border-left:5px solid var(--amber);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;color:#5c4a08;line-height:1.6}
+.aviso strong{color:#3d3005}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tab{font:600 13px var(--sans);padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--navy-2);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.tab .n{font-family:var(--mono);font-size:11px;background:var(--panel-alt);border-radius:999px;padding:1px 7px;color:var(--muted)}
+.tab:hover{background:#f0f4f8}
+.tab.activo{background:var(--navy);border-color:var(--navy);color:#fff}
+.tab.activo .n{background:rgba(255,255,255,.18);color:#fff}
+.modulo{display:none}
+.modulo.activo{display:block}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px 14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.field .hint{display:block;font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-top:2px}
+.field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:400 14px var(--sans);color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{border-color:var(--blue);outline:2px solid rgba(26,95,168,.18)}
+.actions-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.result-card{background:var(--navy);color:#eaf2f9;border-radius:var(--radius);padding:22px;border-left:6px solid var(--blue);box-shadow:var(--shadow);margin-top:18px}
+.result-card .rc-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fb2d1;margin-bottom:12px}
+.result-card .rc-val{font-family:var(--disp);font-weight:700;font-size:40px;line-height:1;letter-spacing:.02em}
+.result-card .rc-val small{font-size:.42em;font-weight:500;color:#9db8cf;margin-left:6px}
+.result-card .rc-sub{font-size:14.5px;font-weight:600;margin:6px 0 14px;color:#eaf2f9}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.14);font-size:13.5px}
+.rc-row .k{color:#9db8cf;text-transform:uppercase;letter-spacing:.07em;font-size:11.5px;font-family:var(--mono)}
+.rc-row .v{font-weight:600;text-align:right}
+.rc-estado{margin-top:14px;font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;border-radius:7px;background:rgba(255,255,255,.1);text-align:center}
+.rc-estado.ok{background:rgba(30,138,76,.28)}
+.rc-estado.crit{background:rgba(194,47,61,.32)}
+#ondaSVG{width:100%;height:auto;display:block;margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:7px 9px;border-bottom:2px solid var(--line)}
+table.tbl td{padding:6px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl td.num{font-family:var(--mono);text-align:right}
+table.tbl tr.activa td{background:#eaf2fb}
+.tbl-wrap{overflow-x:auto}
+details.mi{margin:16px 0 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-alt);font-size:13.5px;color:var(--ink)}
+details.mi summary{cursor:pointer;padding:10px 14px;font-weight:600;color:var(--blue);font-size:13px;user-select:none;list-style:none}
+details.mi summary::before{content:'§  ';font-weight:400}
+details.mi summary::-webkit-details-marker{display:none}
+details.mi[open] summary{border-bottom:1px solid var(--line)}
+details.mi .mi-body{padding:12px 14px 14px;line-height:1.6}
+details.mi .mi-body p{margin:0 0 8px}
+footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
+.foot-inner{max-width:1180px;margin:0 auto;padding:26px 22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.foot-inner .ver{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8fb2d1}
+.foot-inner strong{color:#fff}
+@media print{.topbar .top-actions,.tabs,.btn{display:none!important}.modulo{display:block!important;page-break-after:always}body{background:#fff}.card,.result-card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><path d="M17 2 6 17h8l-3 11 13-17h-8z" fill="#f2c94c"/></svg>
+    </div>
+    <div class="brand">
+      <h1>Calidad de Energía</h1>
+      <p class="sub">THD, factor de potencia verdadero, factor de cresta y límites de referencia IEEE 519</p>
+      <p class="autor">Ingeniero Darío Cornuz</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">DGA</a>
+      <a class="btn ghost" href="calculadora-ric.html">RIC</a>
+      <a class="btn ghost" href="calculadora-nec.html">NEC</a>
+      <a class="btn ghost" href="curvas-proteccion.html">Curvas</a>
+      <a class="btn ghost" href="checklist-nfpa70e.html">Checklist</a>
+      <a class="btn ghost" href="flujo-potencia.html">Flujo de Potencia</a>
+      <a class="btn ghost" href="termografia-guiada.html">Termografía</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="aviso">
+  <div class="aviso">
+    <strong>Uso de referencia.</strong> Los límites mostrados corresponden a <strong>IEEE 519-2014</strong> (Recommended Practice and Requirements for Harmonic Control in Electric Power Systems): THD de tensión ≤5% y armónico individual ≤3% para sistemas ≤69 kV en el punto de acoplamiento común; distorsión de demanda total (TDD) de corriente según la relación I<sub>cc</sub>/I<sub>L</sub> del punto de conexión. Son valores de aplicación general — el límite de cumplimiento contractual real depende del acuerdo con la empresa distribuidora y de mediciones en el punto de acoplamiento común (PCC), no solo de esta estimación.
+  </div>
+</section>
+
+<section id="modulos">
+  <div class="kicker">Módulos de análisis</div>
+  <h2>Analizador de Calidad de Energía</h2>
+  <div class="tabs" role="tablist" aria-label="Módulos de análisis">
+    <button class="tab activo" data-mod="thd" type="button"><span class="n">01</span> THD y Forma de Onda</button>
+    <button class="tab" data-mod="pf" type="button"><span class="n">02</span> Factor de Potencia</button>
+    <button class="tab" data-mod="limites" type="button"><span class="n">03</span> Límites IEEE 519</button>
+  </div>
+
+  <!-- 01 THD -->
+  <div class="modulo activo" id="mod-thd">
+    <div class="card">
+      <h3>Distorsión Armónica Total (THD) y Forma de Onda</h3>
+      <div class="form-grid">
+        <div class="field"><label for="th_señal">Señal</label>
+          <select id="th_señal">
+            <option value="v">Tensión</option>
+            <option value="i" selected>Corriente</option>
+          </select>
+        </div>
+        <div class="field"><label for="th_h3">3.º armónico (%)</label><input id="th_h3" type="number" step="0.1" min="0" value="15"></div>
+        <div class="field"><label for="th_h5">5.º armónico (%)</label><input id="th_h5" type="number" step="0.1" min="0" value="10"></div>
+        <div class="field"><label for="th_h7">7.º armónico (%)</label><input id="th_h7" type="number" step="0.1" min="0" value="6"></div>
+        <div class="field"><label for="th_h9">9.º armónico (%)</label><input id="th_h9" type="number" step="0.1" min="0" value="3"></div>
+        <div class="field"><label for="th_h11">11.º armónico (%)</label><input id="th_h11" type="number" step="0.1" min="0" value="4"></div>
+        <div class="field"><label for="th_h13">13.º armónico (%)</label><input id="th_h13" type="number" step="0.1" min="0" value="2"></div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcTHD()" type="button">Calcular THD</button></div>
+      <div class="result-card" id="th_out" hidden></div>
+      <svg id="ondaSVG" viewBox="0 0 640 220" role="img" aria-label="Forma de onda reconstruida a partir de la fundamental y los armónicos ingresados"></svg>
+      <details class="mi"><summary>Fundamento</summary>
+        <div class="mi-body">
+          <p>THD (%) = √(Σ (h<sub>n</sub>%)²) para n = 3,5,7,9,11,13, expresado como porcentaje de la fundamental.</p>
+          <p>Factor de cresta = valor de pico / valor RMS de la onda reconstruida (1,414 en una senoidal pura sin distorsión).</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- 02 FACTOR DE POTENCIA -->
+  <div class="modulo" id="mod-pf">
+    <div class="card">
+      <h3>Factor de Potencia Verdadero vs. de Desplazamiento</h3>
+      <div class="form-grid">
+        <div class="field"><label for="pf_dpf">FP de desplazamiento (cos φ fundamental)</label><input id="pf_dpf" type="number" step="0.01" min="0.1" max="1" value="0.92"></div>
+        <div class="field"><label for="pf_thdi">THD de corriente (%)</label><input id="pf_thdi" type="number" step="0.1" min="0" value="18"></div>
+      </div>
+      <div class="actions-row"><button class="btn primary" onclick="calcPF()" type="button">Calcular FP verdadero</button></div>
+      <div class="result-card" id="pf_out" hidden></div>
+      <details class="mi"><summary>Fundamento</summary>
+        <div class="mi-body">
+          <p>Con tensión aproximadamente senoidal, el factor de potencia verdadero (total) se relaciona con el de desplazamiento y la distorsión de corriente por:</p>
+          <p style="font-family:var(--mono);font-size:14px">FP<sub>verdadero</sub> = FP<sub>desplazamiento</sub> / √(1 + THD<sub>i</sub>²)</p>
+          <p>La distorsión armónica reduce el factor de potencia total aunque el desplazamiento fundamental (cos φ) sea alto — esto penaliza facturación en tarifas con cargo por factor de potencia y aumenta las pérdidas I²R en la instalación.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- 03 LIMITES IEEE 519 -->
+  <div class="modulo" id="mod-limites">
+    <div class="card">
+      <h3>Límites de Referencia IEEE 519-2014</h3>
+      <h3 style="font-size:15px;margin-top:4px">Tensión (sistemas ≤ 69 kV)</h3>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Parámetro</th><th>Límite</th></tr></thead>
+        <tbody>
+          <tr><td>Armónico individual</td><td class="num">≤ 3,0 %</td></tr>
+          <tr><td>THD de tensión</td><td class="num">≤ 5,0 %</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3 style="font-size:15px;margin-top:22px">Corriente — distorsión de demanda total (TDD) según I<sub>cc</sub>/I<sub>L</sub></h3>
+      <div class="form-grid">
+        <div class="field"><label for="li_ratio">Relación I<sub>cc</sub> / I<sub>L</sub> en el punto de conexión</label>
+          <select id="li_ratio" onchange="marcarLimite()">
+            <option value="0">&lt; 20</option>
+            <option value="1">20 – 50</option>
+            <option value="2">50 – 100</option>
+            <option value="3">100 – 1000</option>
+            <option value="4">&gt; 1000</option>
+          </select>
+        </div>
+        <div class="field"><label for="li_tdd">TDD medido o estimado (%)</label><input id="li_tdd" type="number" step="0.1" min="0" value="7" oninput="marcarLimite()"></div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:12px"><table class="tbl" id="li_tabla">
+        <thead><tr><th>I<sub>cc</sub>/I<sub>L</sub></th><th>TDD máx. de referencia</th></tr></thead>
+        <tbody>
+          <tr data-i="0"><td>&lt; 20</td><td class="num">5,0 %</td></tr>
+          <tr data-i="1"><td>20 – 50</td><td class="num">8,0 %</td></tr>
+          <tr data-i="2"><td>50 – 100</td><td class="num">12,0 %</td></tr>
+          <tr data-i="3"><td>100 – 1000</td><td class="num">15,0 %</td></tr>
+          <tr data-i="4"><td>&gt; 1000</td><td class="num">20,0 %</td></tr>
+        </tbody>
+      </table></div>
+      <div class="result-card" id="li_out"></div>
+      <details class="mi"><summary>Fundamento</summary>
+        <div class="mi-body">
+          <p>TDD (Total Demand Distortion) se calcula respecto a la corriente de demanda máxima de carga (I<sub>L</sub>), no respecto a la corriente instantánea — a diferencia del THD que es relativo a la fundamental en el instante de medición. Valores de referencia según IEEE 519-2014, Tabla 2 (grupo de armónicos h &lt; 50).</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 <strong>Ingeniero Darío Cornuz</strong> · Suite Eléctrica — Calidad de Energía</span>
+    <span class="ver">Versión 1.0 · GitHub Pages · Sin servidores ni bases de datos externas</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('activo'));
+  document.querySelectorAll('.modulo').forEach(x => x.classList.remove('activo'));
+  t.classList.add('activo');
+  $('mod-' + t.dataset.mod).classList.add('activo');
+}));
+
+/* ===== 01 THD ===== */
+function dibujarOndaTHD(h){
+  const svg = $('ondaSVG');
+  const w = 640, hgt = 220, midY = 110, amp = 85;
+  const orders = [1,3,5,7,9,11,13];
+  const amps = [1, h.h3/100, h.h5/100, h.h7/100, h.h9/100, h.h11/100, h.h13/100];
+  const n = 300;
+  let vals = [];
+  let d = '', dRef = '';
+  for(let j = 0; j <= n; j++){
+    const t = (j/n) * 2 * Math.PI;
+    let y = 0;
+    orders.forEach((ord,idx) => { y += amps[idx] * Math.sin(ord * t); });
+    vals.push(y);
+    const px = (j/n) * w;
+    const py = midY - y * amp * 0.6;
+    d += (j===0?'M':'L') + px.toFixed(1) + ',' + py.toFixed(1) + ' ';
+    const pyRef = midY - Math.sin(t) * amp * 0.6;
+    dRef += (j===0?'M':'L') + px.toFixed(1) + ',' + pyRef.toFixed(1) + ' ';
+  }
+  const rms = Math.sqrt(vals.reduce((s,v)=>s+v*v,0)/vals.length);
+  const peak = Math.max(...vals.map(Math.abs));
+  svg.innerHTML = `
+    <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" stroke="#e3e8ee"/>
+    <path d="${dRef}" fill="none" stroke="#b9c5d1" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <path d="${d}" fill="none" stroke="#1a5fa8" stroke-width="2.2"/>
+    <text x="10" y="18" font-size="11" fill="#5b6a79">Onda reconstruida (azul) vs. fundamental pura (gris)</text>`;
+  return {rms, peak};
+}
+
+function calcTHD(){
+  const h = {
+    h3: Number($('th_h3').value)||0, h5: Number($('th_h5').value)||0, h7: Number($('th_h7').value)||0,
+    h9: Number($('th_h9').value)||0, h11: Number($('th_h11').value)||0, h13: Number($('th_h13').value)||0
+  };
+  const thd = Math.sqrt(h.h3**2 + h.h5**2 + h.h7**2 + h.h9**2 + h.h11**2 + h.h13**2);
+  const {rms, peak} = dibujarOndaTHD(h);
+  const crestFactor = peak / rms;
+  const señal = $('th_señal').value === 'v' ? 'Tensión' : 'Corriente';
+  const limite = $('th_señal').value === 'v' ? 5 : null;
+  const out = $('th_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">THD calculado — ${señal}</div>
+    <div class="rc-val">${thd.toFixed(1)}<small>%</small></div>
+    <div class="rc-sub">Factor de cresta: ${crestFactor.toFixed(2)} (referencia senoidal pura: 1,41)</div>
+    ${limite !== null ? `<div class="rc-estado ${thd<=limite?'ok':'crit'}">${thd<=limite ? 'Dentro del límite IEEE 519 (≤5%)' : 'Excede el límite de referencia IEEE 519 (5%)'}</div>` : `<div class="rc-estado">Compare contra el límite TDD según I<sub>cc</sub>/I<sub>L</sub> en la pestaña 03</div>`}`;
+}
+calcTHD();
+
+/* ===== 02 FACTOR DE POTENCIA ===== */
+function calcPF(){
+  const dpf = Number($('pf_dpf').value) || 1;
+  const thdi = Number($('pf_thdi').value) || 0;
+  const pfTrue = dpf / Math.sqrt(1 + Math.pow(thdi/100, 2));
+  const out = $('pf_out');
+  out.hidden = false;
+  out.innerHTML = `
+    <div class="rc-kicker">Factor de potencia verdadero</div>
+    <div class="rc-val">${pfTrue.toFixed(3)}</div>
+    <div class="rc-sub">FP de desplazamiento: ${dpf.toFixed(2)} · THD corriente: ${thdi.toFixed(1)} %</div>
+    <div class="rc-row"><span class="k">Pérdida de FP por distorsión</span><span class="v">${(dpf - pfTrue).toFixed(3)}</span></div>`;
+}
+calcPF();
+
+/* ===== 03 LIMITES ===== */
+const TDD_LIMITES = [5.0, 8.0, 12.0, 15.0, 20.0];
+function marcarLimite(){
+  const idx = Number($('li_ratio').value);
+  document.querySelectorAll('#li_tabla tbody tr').forEach(tr => tr.classList.toggle('activa', Number(tr.dataset.i) === idx));
+  const limite = TDD_LIMITES[idx];
+  const tdd = Number($('li_tdd').value) || 0;
+  const cumple = tdd <= limite;
+  $('li_out').innerHTML = `
+    <div class="rc-kicker">Evaluación de TDD</div>
+    <div class="rc-row"><span class="k">TDD ingresado</span><span class="v">${tdd.toFixed(1)} %</span></div>
+    <div class="rc-row"><span class="k">Límite de referencia</span><span class="v">${limite.toFixed(1)} %</span></div>
+    <div class="rc-estado ${cumple?'ok':'crit'}">${cumple ? 'Dentro del límite de referencia IEEE 519' : 'Excede el límite de referencia — evaluar mitigación de armónicos'}</div>`;
+}
+marcarLimite();
+</script>
+</body>
+</html>
