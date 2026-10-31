@@ -369,28 +369,22 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   <p class="kicker">Identificación general</p>
   <h2>Información del Transformador</h2>
   <details class="card" open>
-    <summary>Datos del equipo y del muestreo
+    <summary>Datos del equipo y del análisis
       <span class="chev" aria-hidden="true">▾</span>
     </summary>
     <div class="inner">
       <div class="form-grid">
-        <div class="field"><label for="f_empresa">Empresa</label><input id="f_empresa" type="text"></div>
-        <div class="field"><label for="f_instalacion">Instalación</label><input id="f_instalacion" type="text"></div>
-        <div class="field"><label for="f_subestacion">Subestación</label><input id="f_subestacion" type="text"></div>
-        <div class="field"><label for="f_trafo">Transformador</label><input id="f_trafo" type="text" placeholder="TAG / identificador"></div>
-        <div class="field"><label for="f_fabricante">Fabricante</label><input id="f_fabricante" type="text"></div>
+        <div class="field"><label for="f_trafo">TAG</label><input id="f_trafo" type="text" placeholder="Identificador del equipo"></div>
+        <div class="field"><label for="f_marca">Marca</label><input id="f_marca" type="text"></div>
         <div class="field"><label for="f_modelo">Modelo</label><input id="f_modelo" type="text"></div>
-        <div class="field"><label for="f_serie">Número de serie</label><input id="f_serie" type="text"></div>
-        <div class="field"><label for="f_anio">Año de fabricación</label><input id="f_anio" type="number" min="1900" max="2100"></div>
-        <div class="field"><label for="f_mva">Potencia nominal (MVA)</label><input id="f_mva" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="f_serie">N° de Serie</label><input id="f_serie" type="text"></div>
+        <div class="field"><label for="f_kva">Potencia (kVA)</label><input id="f_kva" type="number" min="0" step="1"></div>
         <div class="field"><label for="f_kv1">Tensión primaria (kV)</label><input id="f_kv1" type="number" min="0" step="0.1"></div>
         <div class="field"><label for="f_kv2">Tensión secundaria (kV)</label><input id="f_kv2" type="number" min="0" step="0.1"></div>
-        <div class="field"><label for="f_fmuestreo">Fecha de muestreo</label><input id="f_fmuestreo" type="date"></div>
+        <div class="field"><label for="f_kv3">Tensión terciaria (kV)</label><input id="f_kv3" type="number" min="0" step="0.1"></div>
         <div class="field"><label for="f_fanalisis">Fecha de análisis</label><input id="f_fanalisis" type="date"></div>
         <div class="field"><label for="f_lab">Laboratorio</label><input id="f_lab" type="text"></div>
         <div class="field"><label for="f_informe">Número de informe</label><input id="f_informe" type="text"></div>
-        <div class="field"><label for="f_resp">Responsable</label><input id="f_resp" type="text"></div>
-        <div class="field" style="grid-column:1/-1"><label for="f_obs">Observaciones</label><textarea id="f_obs"></textarea></div>
       </div>
     </div>
   </details>
@@ -403,14 +397,14 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   <div class="gas-grid" id="gasGrid">
     <div class="gas tdcg-si"><div class="formula">H₂</div><div class="nombre">Hidrógeno</div>
       <div class="in"><input id="g_h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Hidrógeno en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas tdcg-si"><div class="formula">C₂H₂</div><div class="nombre">Acetileno</div>
+      <div class="in"><input id="g_c2h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Acetileno en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">CH₄</div><div class="nombre">Metano</div>
       <div class="in"><input id="g_ch4" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Metano en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">C₂H₆</div><div class="nombre">Etano</div>
       <div class="in"><input id="g_c2h6" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Etano en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">C₂H₄</div><div class="nombre">Etileno</div>
       <div class="in"><input id="g_c2h4" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Etileno en ppm"><span class="unidad">ppm</span></div></div>
-    <div class="gas tdcg-si"><div class="formula">C₂H₂</div><div class="nombre">Acetileno</div>
-      <div class="in"><input id="g_c2h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Acetileno en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">CO</div><div class="nombre">Monóxido de carbono</div>
       <div class="in"><input id="g_co" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Monóxido de carbono en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas"><div class="formula">CO₂</div><div class="nombre">Dióxido de carbono</div>
@@ -768,10 +762,10 @@ const CLAVE_HIST = 'dga_historial_v2';
 /* ---------- Definición de gases y límites individuales IEEE C57.104 (ppm) ---------- */
 const GASES = [
   {id:'g_h2',  clave:'h2',  f:'H₂',   nombre:'Hidrógeno',            lim:[100,700,1800],  tdcg:true},
+  {id:'g_c2h2',clave:'c2h2',f:'C₂H₂', nombre:'Acetileno',            lim:[1,9,35],        tdcg:true},
   {id:'g_ch4', clave:'ch4', f:'CH₄',  nombre:'Metano',               lim:[120,400,1000],  tdcg:true},
   {id:'g_c2h6',clave:'c2h6',f:'C₂H₆', nombre:'Etano',                lim:[65,100,150],    tdcg:true},
   {id:'g_c2h4',clave:'c2h4',f:'C₂H₄', nombre:'Etileno',              lim:[50,100,200],    tdcg:true},
-  {id:'g_c2h2',clave:'c2h2',f:'C₂H₂', nombre:'Acetileno',            lim:[1,9,35],        tdcg:true},
   {id:'g_co',  clave:'co',  f:'CO',   nombre:'Monóxido de carbono',  lim:[350,570,1400],  tdcg:true},
   {id:'g_co2', clave:'co2', f:'CO₂',  nombre:'Dióxido de carbono',   lim:[2500,4000,10000],tdcg:false},
   {id:'g_o2',  clave:'o2',  f:'O₂',   nombre:'Oxígeno',              lim:null, tdcg:false},
@@ -1671,7 +1665,7 @@ function guardarAnalisis(){
   const h = leerHistorial();
   h.push({
     id: Date.now(),
-    fecha: $('f_fmuestreo').value || new Date().toISOString().slice(0,10),
+    fecha: $('f_fanalisis').value || new Date().toISOString().slice(0,10),
     transformador: $('f_trafo').value.trim() || 'Sin identificar',
     serie: $('f_serie').value.trim(),
     informe: $('f_informe').value.trim(),
@@ -1800,7 +1794,7 @@ function cargarRegistro(id){
   $('f_trafo').value = r.transformador === 'Sin identificar' ? '' : r.transformador;
   $('f_serie').value = r.serie || '';
   $('f_informe').value = r.informe || '';
-  $('f_fmuestreo').value = r.fecha || '';
+  $('f_fanalisis').value = r.fecha || '';
   FQ_PARAMS.forEach(p => $(p.id).value = (r.fq && r.fq.val && r.fq.val[p.k] !== null && r.fq.val[p.k] !== undefined) ? r.fq.val[p.k] : '');
   actualizar();
   document.getElementById('cromatografia').scrollIntoView({behavior:'smooth'});
@@ -1917,7 +1911,7 @@ function cargarEjemplo(){
   const ej = {g_h2:210, g_ch4:85, g_c2h6:20, g_c2h4:180, g_c2h2:150, g_co:420, g_co2:1650, g_o2:12000, g_n2:58000};
   for(const k in ej) $(k).value = ej[k];
   if(!$('f_trafo').value) $('f_trafo').value = 'TR-DEMO';
-  if(!$('f_fmuestreo').value) $('f_fmuestreo').value = new Date().toISOString().slice(0,10);
+  if(!$('f_fanalisis').value) $('f_fanalisis').value = new Date().toISOString().slice(0,10);
   actualizar();
   document.getElementById('duval').scrollIntoView({behavior:'smooth'});
 }
