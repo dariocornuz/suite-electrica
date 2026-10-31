@@ -56,6 +56,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font
 .quicknav a:hover{color:var(--blue)}
 .quicknav a:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 section{scroll-margin-top:52px}
+
+/* ===== Botón flotante — volver al inicio ===== */
+.fab-home{position:fixed;right:22px;bottom:22px;width:52px;height:52px;border-radius:50%;background:var(--navy);border:2px solid rgba(255,255,255,.25);display:grid;place-items:center;box-shadow:0 4px 16px rgba(13,43,69,.35);z-index:40;text-decoration:none;transition:background .15s,transform .15s}
+.fab-home:hover{background:var(--navy-2);transform:translateY(-2px)}
+.fab-home:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+@media (max-width:640px){.fab-home{right:14px;bottom:14px;width:46px;height:46px}}
 .brand-mark svg{display:block}
 .brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(24px,4vw,34px);letter-spacing:.06em;text-transform:uppercase;line-height:1.05}
 .brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
@@ -245,7 +251,7 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   @page{size:A4;margin:12mm 14mm}
 
   /* Fuera del informe: navegación, acciones, historial y contenido didáctico/de marketing */
-  .quicknav,.topbar .top-actions,.hist-actions,#futuros,#historial,.btn,
+  .quicknav,.fab-home,.topbar .top-actions,.hist-actions,#futuros,#historial,.btn,
   details.mi,.na-overlay{display:none!important}
   /* tablas de referencia estáticas (no son resultados del análisis) */
   #iec60599 .ind-grid>.card:nth-child(2),
@@ -370,6 +376,13 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   <a href="#recomendaciones">Recomendaciones</a>
   <a href="#historial">Historial</a>
 </nav>
+
+<a class="fab-home" href="index.html" aria-label="Volver al inicio" title="Volver al inicio">
+  <svg width="22" height="22" viewBox="0 0 30 30" fill="none">
+    <polygon points="15,3 27,25 3,25" stroke="#fff" stroke-width="2" fill="none"/>
+    <circle cx="17" cy="18" r="3" fill="#f2c94c"/>
+  </svg>
+</a>
 
 <main>
 
