@@ -369,7 +369,7 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   <p class="kicker">Identificación general</p>
   <h2>Información del Transformador</h2>
   <details class="card" open>
-    <summary>Datos del equipo y del análisis
+    <summary>Datos del equipo y del laboratorio
       <span class="chev" aria-hidden="true">▾</span>
     </summary>
     <div class="inner">
@@ -382,6 +382,7 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
         <div class="field"><label for="f_kv1">Tensión primaria (kV)</label><input id="f_kv1" type="number" min="0" step="0.1"></div>
         <div class="field"><label for="f_kv2">Tensión secundaria (kV)</label><input id="f_kv2" type="number" min="0" step="0.1"></div>
         <div class="field"><label for="f_kv3">Tensión terciaria (kV)</label><input id="f_kv3" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="f_fmuestreo">Fecha de muestreo</label><input id="f_fmuestreo" type="date"></div>
         <div class="field"><label for="f_fanalisis">Fecha de análisis</label><input id="f_fanalisis" type="date"></div>
         <div class="field"><label for="f_lab">Laboratorio</label><input id="f_lab" type="text"></div>
         <div class="field"><label for="f_informe">Número de informe</label><input id="f_informe" type="text"></div>
@@ -425,18 +426,24 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
     <div class="mi-body"><p>El DGA diagnostica <strong>fallas activas</strong>, pero no evalúa la <strong>condición del aceite como aislante</strong>: un transformador puede estar libre de fallas y aun así tener el aceite comprometido (humedad, baja rigidez dieléctrica, oxidación). Este módulo ingresa el paquete fisicoquímico del mismo informe de laboratorio y los furanos, y la Interpretación Técnica <strong>cruza ambas fuentes</strong>: por ejemplo, rigidez baja + humedad alta apuntan a ingreso de agua; acidez alta + tensión interfacial baja a oxidación; furanos + CO₂/CO bajo confirman daño al papel. Los campos son opcionales — complete los disponibles en su informe. Límites de referencia para clase ≤ 69 kV (ASTM / IEEE C57.106), los mismos de los informes Lubrisider.</p></div>
   </details>
   <div class="gas-grid">
-    <div class="gas fq"><div class="formula">H₂O</div><div class="nombre">Humedad · ASTM D1533 · ≤ 35</div>
-      <div class="in"><input id="fq_hum" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Humedad en ppm"><span class="unidad">ppm</span></div></div>
-    <div class="gas fq"><div class="formula">RD</div><div class="nombre">Rigidez dieléctrica · ASTM D1816 · ≥ 40</div>
-      <div class="in"><input id="fq_rig" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Rigidez dieléctrica en kV"><span class="unidad">kV</span></div></div>
-    <div class="gas fq"><div class="formula">TAN</div><div class="nombre">Acidez · ASTM D974 · ≤ 0,2</div>
-      <div class="in"><input id="fq_acid" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Acidez en mg KOH por gramo"><span class="unidad">mg KOH/g</span></div></div>
     <div class="gas fq"><div class="formula">TIF</div><div class="nombre">Tensión interfacial · ASTM D971 · ≥ 25</div>
       <div class="in"><input id="fq_ift" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Tensión interfacial en dinas por centímetro"><span class="unidad">dinas/cm</span></div></div>
-    <div class="gas fq"><div class="formula">tgδ 25</div><div class="nombre">Tangente delta 25 °C · ASTM D924 · ≤ 0,5</div>
-      <div class="in"><input id="fq_td25" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Tangente delta a 25 grados en porcentaje"><span class="unidad">%</span></div></div>
-    <div class="gas fq"><div class="formula">tgδ 90</div><div class="nombre">Tangente delta 90 °C · ASTM D924 · ≤ 5,0</div>
-      <div class="in"><input id="fq_td90" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Tangente delta a 90 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">tgδ 25</div><div class="nombre">F. de potencia 25 °C · ASTM D924 · ≤ 0,5</div>
+      <div class="in"><input id="fq_td25" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Factor de potencia a 25 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">tgδ 90</div><div class="nombre">F. de potencia 90 °C · ASTM D924 · ≤ 5,0</div>
+      <div class="in"><input id="fq_td90" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Factor de potencia a 90 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">RD</div><div class="nombre">Dieléctrico · ASTM D1816 · ≥ 40</div>
+      <div class="in"><input id="fq_rig" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Rigidez dieléctrica en kV"><span class="unidad">kV</span></div></div>
+    <div class="gas fq"><div class="formula">Color</div><div class="nombre">Color · ASTM D1500 · informativo</div>
+      <div class="in"><input id="fq_color" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Color"><span class="unidad">—</span></div></div>
+    <div class="gas fq"><div class="formula">ρ</div><div class="nombre">Densidad · ASTM D1298 · informativo</div>
+      <div class="in"><input id="fq_dens" type="number" min="0" step="0.0001" inputmode="decimal" aria-label="Densidad en kilogramos por decímetro cúbico"><span class="unidad">kg/dm³</span></div></div>
+    <div class="gas fq"><div class="formula">Visual</div><div class="nombre">Aspecto visual · informativo</div>
+      <div class="in"><input id="fq_visual" type="text" aria-label="Aspecto visual del aceite" placeholder="Claro…"></div></div>
+    <div class="gas fq"><div class="formula">TAN</div><div class="nombre">Acidez · ASTM D974 · ≤ 0,2</div>
+      <div class="in"><input id="fq_acid" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Acidez en mg KOH por gramo"><span class="unidad">mg KOH/g</span></div></div>
+    <div class="gas fq"><div class="formula">H₂O</div><div class="nombre">Humedad · ASTM D1533 · ≤ 35</div>
+      <div class="in"><input id="fq_hum" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Humedad en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas fq"><div class="formula">2FAL</div><div class="nombre">2-furfural · ASTM D5837 · ≤ 100</div>
       <div class="in"><input id="fq_2fal" type="number" min="0" step="0.1" inputmode="decimal" aria-label="2-furfural en ppb"><span class="unidad">ppb</span></div></div>
     <div class="gas fq"><div class="formula">DP</div><div class="nombre">Grado de polimerización estimado</div>
@@ -1070,34 +1077,45 @@ const POLI_T5 = {   // vértices [CH4, C2H4, C2H6]
 
 /* ---------- Fisicoquímicos del aceite (clase ≤ 69 kV, ASTM / IEEE C57.106) ---------- */
 const FQ_PARAMS = [
-  {id:'fq_hum',  k:'hum',  nombre:'Humedad',             unidad:'ppm',      lim:'≤ 35',   ok:v=>v<=35},
-  {id:'fq_rig',  k:'rig',  nombre:'Rigidez dieléctrica', unidad:'kV',       lim:'≥ 40',   ok:v=>v>=40},
-  {id:'fq_acid', k:'acid', nombre:'Acidez',              unidad:'mg KOH/g', lim:'≤ 0,2',  ok:v=>v<=0.2},
-  {id:'fq_ift',  k:'ift',  nombre:'Tensión interfacial', unidad:'dinas/cm', lim:'≥ 25',   ok:v=>v>=25},
-  {id:'fq_td25', k:'td25', nombre:'Tangente delta 25 °C',unidad:'%',        lim:'≤ 0,5',  ok:v=>v<=0.5},
-  {id:'fq_td90', k:'td90', nombre:'Tangente delta 90 °C',unidad:'%',        lim:'≤ 5,0',  ok:v=>v<=5.0},
-  {id:'fq_2fal', k:'fal',  nombre:'2-furfural (2FAL)',   unidad:'ppb',      lim:'≤ 100',  ok:v=>v<=100},
-  {id:'fq_dp',   k:'dp',   nombre:'Grado de polimerización', unidad:'',     lim:'≥ 450 (fin de vida ≈ 200)', ok:v=>v>=450}
+  {id:'fq_ift',   k:'ift',   nombre:'Tensión interfacial',  unidad:'dinas/cm', lim:'≥ 25',   ok:v=>v>=25},
+  {id:'fq_td25',  k:'td25',  nombre:'F. de potencia 25 °C', unidad:'%',        lim:'≤ 0,5',  ok:v=>v<=0.5},
+  {id:'fq_td90',  k:'td90',  nombre:'F. de potencia 90 °C', unidad:'%',        lim:'≤ 5,0',  ok:v=>v<=5.0},
+  {id:'fq_rig',   k:'rig',   nombre:'Rigidez dieléctrica',  unidad:'kV',       lim:'≥ 40',   ok:v=>v>=40},
+  {id:'fq_color', k:'color', nombre:'Color',                unidad:'',         lim:'Informativo', ok:()=>true, informativo:true},
+  {id:'fq_dens',  k:'dens',  nombre:'Densidad',             unidad:'kg/dm³',   lim:'Informativo', ok:()=>true, informativo:true},
+  {id:'fq_visual',k:'visual',nombre:'Aspecto visual',       unidad:'',         lim:'Informativo', ok:()=>true, informativo:true, tipo:'texto'},
+  {id:'fq_acid',  k:'acid',  nombre:'Acidez',               unidad:'mg KOH/g', lim:'≤ 0,2',  ok:v=>v<=0.2},
+  {id:'fq_hum',   k:'hum',   nombre:'Humedad',              unidad:'ppm',      lim:'≤ 35',   ok:v=>v<=35},
+  {id:'fq_2fal',  k:'fal',   nombre:'2-furfural (2FAL)',    unidad:'ppb',      lim:'≤ 100',  ok:v=>v<=100},
+  {id:'fq_dp',    k:'dp',    nombre:'Grado de polimerización', unidad:'',      lim:'≥ 450 (fin de vida ≈ 200)', ok:v=>v>=450}
 ];
 function evaluarFQ(){
   const val = {}, items = [];
   let ingresados = 0, desviaciones = 0;
   FQ_PARAMS.forEach(p => {
     const raw = $(p.id).value.trim();
+    if(p.tipo === 'texto'){
+      val[p.k] = raw === '' ? null : raw;
+      if(val[p.k] !== null){ ingresados++; items.push({p, v:val[p.k], cumple:true}); }
+      return;
+    }
     const v = raw === '' ? null : parseFloat(raw);
     val[p.k] = (v === null || isNaN(v)) ? null : v;
     if(val[p.k] !== null){
       ingresados++;
       const cumple = p.ok(val[p.k]);
-      if(!cumple) desviaciones++;
+      if(!p.informativo && !cumple) desviaciones++;
       items.push({p, v:val[p.k], cumple});
     }
   });
+  const evaluables = items.filter(i => !i.p.informativo).length;
+  const informativos = ingresados - evaluables;
+  const sufijoInfo = informativos ? ' · ' + informativos + ' informativo(s)' : '';
   let css='na', txt='Sin datos', resumen='';
   if(ingresados > 0){
-    if(desviaciones === 0){ css='ok'; txt='Conforme'; resumen = ingresados + ' parámetro(s) dentro de límites'; }
+    if(desviaciones === 0){ css='ok'; txt='Conforme'; resumen = evaluables + ' parámetro(s) dentro de límites' + sufijoInfo; }
     else { css = desviaciones >= 2 ? 'crit' : 'high'; txt = desviaciones + ' desviación(es)';
-           resumen = items.filter(i=>!i.cumple).map(i=>i.p.nombre).join(' · '); }
+           resumen = items.filter(i=>!i.p.informativo && !i.cumple).map(i=>i.p.nombre).join(' · '); }
   }
   return {val, items, ingresados, desviaciones, css, txt, resumen};
 }
@@ -1527,10 +1545,15 @@ function actualizar(){
   $('fqChip').className = 'chip ' + fq.css;
   $('fqChip').textContent = fq.txt;
   $('fqResumen').textContent = fq.ingresados ? fq.resumen : '';
-  $('fqDetalle').innerHTML = fq.items.map(i =>
-    `<div class="fq-item ${i.cumple?'bien':'mal'}"><span class="fq-n">${i.p.nombre}</span>
-     <span class="fq-v">${fmt(i.v, i.p.k==='acid'||i.p.k==='td25'||i.p.k==='td90'?3:1)} ${i.p.unidad}</span>
-     <span style="color:var(--muted);font-size:12px">Límite: ${i.p.lim} — ${i.cumple?'cumple':'<strong style=\u0022color:var(--crit)\u0022>no cumple</strong>'}</span></div>`).join('');
+  $('fqDetalle').innerHTML = fq.items.map(i => {
+    const valorTxt = i.p.tipo === 'texto' ? i.v
+      : `${fmt(i.v, i.p.k==='acid'||i.p.k==='td25'||i.p.k==='td90'?3:(i.p.k==='dens'?4:1))} ${i.p.unidad}`;
+    const estadoTxt = i.p.informativo ? 'Informativo — sin criterio de aceptación normado'
+      : `Límite: ${i.p.lim} — ${i.cumple?'cumple':'<strong style=\u0022color:var(--crit)\u0022>no cumple</strong>'}`;
+    return `<div class="fq-item ${i.p.informativo ? '' : (i.cumple?'bien':'mal')}"><span class="fq-n">${i.p.nombre}</span>
+     <span class="fq-v">${valorTxt}</span>
+     <span style="color:var(--muted);font-size:12px">${estadoTxt}</span></div>`;
+  }).join('');
 
   /* --- Síntesis de métodos --- */
   const filaSin = (metodo, chipTxt, chipCss, obs) =>
@@ -1665,7 +1688,7 @@ function guardarAnalisis(){
   const h = leerHistorial();
   h.push({
     id: Date.now(),
-    fecha: $('f_fanalisis').value || new Date().toISOString().slice(0,10),
+    fecha: $('f_fmuestreo').value || new Date().toISOString().slice(0,10),
     transformador: $('f_trafo').value.trim() || 'Sin identificar',
     serie: $('f_serie').value.trim(),
     informe: $('f_informe').value.trim(),
@@ -1794,7 +1817,7 @@ function cargarRegistro(id){
   $('f_trafo').value = r.transformador === 'Sin identificar' ? '' : r.transformador;
   $('f_serie').value = r.serie || '';
   $('f_informe').value = r.informe || '';
-  $('f_fanalisis').value = r.fecha || '';
+  $('f_fmuestreo').value = r.fecha || '';
   FQ_PARAMS.forEach(p => $(p.id).value = (r.fq && r.fq.val && r.fq.val[p.k] !== null && r.fq.val[p.k] !== undefined) ? r.fq.val[p.k] : '');
   actualizar();
   document.getElementById('cromatografia').scrollIntoView({behavior:'smooth'});
@@ -1911,7 +1934,7 @@ function cargarEjemplo(){
   const ej = {g_h2:210, g_ch4:85, g_c2h6:20, g_c2h4:180, g_c2h2:150, g_co:420, g_co2:1650, g_o2:12000, g_n2:58000};
   for(const k in ej) $(k).value = ej[k];
   if(!$('f_trafo').value) $('f_trafo').value = 'TR-DEMO';
-  if(!$('f_fanalisis').value) $('f_fanalisis').value = new Date().toISOString().slice(0,10);
+  if(!$('f_fmuestreo').value) $('f_fmuestreo').value = new Date().toISOString().slice(0,10);
   actualizar();
   document.getElementById('duval').scrollIntoView({behavior:'smooth'});
 }
