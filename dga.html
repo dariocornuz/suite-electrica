@@ -8,6 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d2b45">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DGA Duval">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <style>
 :root{
   --bg:#eceff3;
@@ -40,6 +49,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font
 .topbar-inner{max-width:1180px;margin:0 auto;padding:26px 22px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .brand-mark{width:52px;height:52px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);border-radius:8px;display:grid;place-items:center;text-decoration:none;transition:background .15s,border-color .15s}
 .brand-mark:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.6)}
+
+/* ===== Navegación rápida ===== */
+.quicknav{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:0 2px 6px rgba(13,43,69,.06);display:flex;gap:4px;overflow-x:auto;white-space:nowrap;padding:0 14px;scrollbar-width:thin}
+.quicknav a{flex:0 0 auto;font:600 12px var(--sans);letter-spacing:.02em;color:var(--muted);text-decoration:none;padding:11px 10px;border-bottom:2px solid transparent}
+.quicknav a:hover{color:var(--blue)}
+.quicknav a:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+section{scroll-margin-top:52px}
 .brand-mark svg{display:block}
 .brand h1{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(24px,4vw,34px);letter-spacing:.06em;text-transform:uppercase;line-height:1.05}
 .brand .sub{margin:4px 0 0;font-size:13.5px;color:#bcd0e2;letter-spacing:.02em}
@@ -226,9 +242,84 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   .result-card .rc-zona{font-size:42px}
 }
 @media print{
-  .topbar .top-actions,.hist-actions,#futuros,.btn{display:none!important}
-  body{background:#fff}
-  .card,.result-card{box-shadow:none}
+  @page{size:A4;margin:12mm 14mm}
+
+  /* Fuera del informe: navegación, acciones, historial y contenido didáctico/de marketing */
+  .quicknav,.topbar .top-actions,.hist-actions,#futuros,#historial,.btn,
+  details.mi,.na-overlay{display:none!important}
+  /* tablas de referencia estáticas (no son resultados del análisis) */
+  #iec60599 .ind-grid>.card:nth-child(2),
+  #rogers .ind-grid>.card:nth-child(2),
+  #keygas .ind-grid>.card:nth-child(2),
+  #indicadores .ind-grid>.card:nth-child(2) .tbl-wrap{display:none!important}
+  /* Duval 4/5: si el triángulo no aplica al caso, no tiene sentido imprimirlo */
+  .duval-grid .card:has(.na-overlay.visible){display:none!important}
+
+  html{scroll-behavior:auto}
+  body{background:#fff;font-size:11px;line-height:1.35}
+  section{margin-bottom:10px}
+  main{padding:4mm 0 6mm;max-width:none}
+  .card,.result-card,.gas,.ratio-box,tr,.fq-item{break-inside:avoid}
+  h2,h3{break-after:avoid}
+
+  .topbar{background:#fff!important;color:var(--ink);border-bottom:2px solid var(--navy)}
+  .topbar::after{display:none}
+  .topbar-inner{padding:6px 0;gap:10px}
+  .brand-mark{width:30px;height:30px;border-color:var(--navy)}
+  .brand-mark svg polygon{stroke:var(--navy)}
+  .brand h1{font-size:16px;color:var(--navy)}
+  .brand .sub{font-size:9.5px;color:var(--muted)}
+  .brand .autor{font-size:8.5px;color:var(--muted)}
+
+  .kicker{font-size:8.5px;margin:0 0 2px}
+  h2{font-size:14px;margin:0 0 6px}
+  h3{font-size:12px;margin:0 0 5px}
+  .card{padding:8px 10px;box-shadow:none;border-color:#c7d0d9}
+  .result-card{padding:10px 12px;box-shadow:none}
+
+  details.card{border:1px solid #c7d0d9}
+  details.card summary{padding:6px 10px;font-size:12px}
+  details.card summary .chev{display:none}
+  details.card .inner{padding:2px 10px 6px}
+  .form-grid{gap:2px 14px}
+  .field label{font-size:9px;margin-bottom:0}
+  .field input,.field textarea,.field select{border:none;background:transparent;padding:1px 0;font:600 11px var(--sans);color:var(--ink)}
+  .field textarea{min-height:auto}
+
+  .gas-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}
+  .gas{padding:5px 7px;box-shadow:none}
+  .gas .nombre{font-size:8.5px;margin:0 0 3px}
+  .gas input{border:none;background:transparent;padding:0;font-size:11px}
+
+  .ind-grid,.duval-grid{gap:8px}
+  .big-val{font-size:22px}
+  .ind-desc,.nota{font-size:9.5px;margin-top:4px}
+  table.tbl{font-size:9.5px}
+  table.tbl th{padding:4px 6px;font-size:8px}
+  table.tbl td{padding:3px 6px}
+
+  #duvalSVG{max-width:230px;margin:0 auto}
+  #duval4SVG,#duval5SVG{max-width:200px;margin:0 auto}
+  .duval-pcts{margin-top:4px}
+  .pct{font-size:10px;padding:2px 6px}
+  .legend{font-size:8.5px;gap:6px;margin-top:5px}
+
+  .result-card .rc-zona{font-size:26px}
+  .result-card .rc-clasif{font-size:11px;margin:2px 0 6px}
+  .rc-row{padding:3px 0;font-size:9.5px}
+  .rc-estado{margin-top:6px;padding:4px 8px;font-size:9px}
+  .interp{font-size:10px;line-height:1.4}
+  .interp p{margin:0 0 5px}
+
+  .ratio-grid{gap:6px}
+  .ratio-box{padding:5px 7px}
+  .ratio-box .rv{font-size:15px}
+
+  ul.reco li{padding:4px 0 4px 16px;font-size:10px}
+
+  footer{margin-top:6px}
+  .foot-inner{padding:6px 0;font-size:8.5px}
+  .foot-inner .ver{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;scroll-behavior:auto}
@@ -265,6 +356,21 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   </div>
 </header>
 
+<nav class="quicknav" aria-label="Navegación rápida entre secciones">
+  <a href="#info">Transformador</a>
+  <a href="#cromatografia">Gases</a>
+  <a href="#fisicoquimicos">Fisicoquímicos</a>
+  <a href="#indicadores">Indicadores</a>
+  <a href="#duval">Duval 1</a>
+  <a href="#iec60599">IEC 60599</a>
+  <a href="#rogers">Rogers</a>
+  <a href="#keygas">Key Gas</a>
+  <a href="#duval45">Duval 4/5</a>
+  <a href="#sintesis">Síntesis</a>
+  <a href="#recomendaciones">Recomendaciones</a>
+  <a href="#historial">Historial</a>
+</nav>
+
 <main>
 
 <!-- ================= INFORMACIÓN DEL TRANSFORMADOR ================= -->
@@ -272,28 +378,23 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   <p class="kicker">Identificación general</p>
   <h2>Información del Transformador</h2>
   <details class="card" open>
-    <summary>Datos del equipo y del muestreo
+    <summary>Datos del equipo y del laboratorio
       <span class="chev" aria-hidden="true">▾</span>
     </summary>
     <div class="inner">
       <div class="form-grid">
-        <div class="field"><label for="f_empresa">Empresa</label><input id="f_empresa" type="text"></div>
-        <div class="field"><label for="f_instalacion">Instalación</label><input id="f_instalacion" type="text"></div>
-        <div class="field"><label for="f_subestacion">Subestación</label><input id="f_subestacion" type="text"></div>
-        <div class="field"><label for="f_trafo">Transformador</label><input id="f_trafo" type="text" placeholder="TAG / identificador"></div>
-        <div class="field"><label for="f_fabricante">Fabricante</label><input id="f_fabricante" type="text"></div>
+        <div class="field"><label for="f_trafo">TAG</label><input id="f_trafo" type="text" placeholder="Identificador del equipo"></div>
+        <div class="field"><label for="f_marca">Marca</label><input id="f_marca" type="text"></div>
         <div class="field"><label for="f_modelo">Modelo</label><input id="f_modelo" type="text"></div>
-        <div class="field"><label for="f_serie">Número de serie</label><input id="f_serie" type="text"></div>
-        <div class="field"><label for="f_anio">Año de fabricación</label><input id="f_anio" type="number" min="1900" max="2100"></div>
-        <div class="field"><label for="f_mva">Potencia nominal (MVA)</label><input id="f_mva" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="f_serie">N° de Serie</label><input id="f_serie" type="text"></div>
+        <div class="field"><label for="f_kva">Potencia (kVA)</label><input id="f_kva" type="number" min="0" step="1"></div>
         <div class="field"><label for="f_kv1">Tensión primaria (kV)</label><input id="f_kv1" type="number" min="0" step="0.1"></div>
         <div class="field"><label for="f_kv2">Tensión secundaria (kV)</label><input id="f_kv2" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="f_kv3">Tensión terciaria (kV)</label><input id="f_kv3" type="number" min="0" step="0.1"></div>
         <div class="field"><label for="f_fmuestreo">Fecha de muestreo</label><input id="f_fmuestreo" type="date"></div>
         <div class="field"><label for="f_fanalisis">Fecha de análisis</label><input id="f_fanalisis" type="date"></div>
         <div class="field"><label for="f_lab">Laboratorio</label><input id="f_lab" type="text"></div>
         <div class="field"><label for="f_informe">Número de informe</label><input id="f_informe" type="text"></div>
-        <div class="field"><label for="f_resp">Responsable</label><input id="f_resp" type="text"></div>
-        <div class="field" style="grid-column:1/-1"><label for="f_obs">Observaciones</label><textarea id="f_obs"></textarea></div>
       </div>
     </div>
   </details>
@@ -306,14 +407,14 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
   <div class="gas-grid" id="gasGrid">
     <div class="gas tdcg-si"><div class="formula">H₂</div><div class="nombre">Hidrógeno</div>
       <div class="in"><input id="g_h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Hidrógeno en ppm"><span class="unidad">ppm</span></div></div>
+    <div class="gas tdcg-si"><div class="formula">C₂H₂</div><div class="nombre">Acetileno</div>
+      <div class="in"><input id="g_c2h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Acetileno en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">CH₄</div><div class="nombre">Metano</div>
       <div class="in"><input id="g_ch4" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Metano en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">C₂H₆</div><div class="nombre">Etano</div>
       <div class="in"><input id="g_c2h6" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Etano en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">C₂H₄</div><div class="nombre">Etileno</div>
       <div class="in"><input id="g_c2h4" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Etileno en ppm"><span class="unidad">ppm</span></div></div>
-    <div class="gas tdcg-si"><div class="formula">C₂H₂</div><div class="nombre">Acetileno</div>
-      <div class="in"><input id="g_c2h2" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Acetileno en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas tdcg-si"><div class="formula">CO</div><div class="nombre">Monóxido de carbono</div>
       <div class="in"><input id="g_co" type="number" min="0" step="0.1" inputmode="decimal" value="0" aria-label="Monóxido de carbono en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas"><div class="formula">CO₂</div><div class="nombre">Dióxido de carbono</div>
@@ -334,18 +435,24 @@ footer{background:var(--navy);color:#bcd0e2;margin-top:20px}
     <div class="mi-body"><p>El DGA diagnostica <strong>fallas activas</strong>, pero no evalúa la <strong>condición del aceite como aislante</strong>: un transformador puede estar libre de fallas y aun así tener el aceite comprometido (humedad, baja rigidez dieléctrica, oxidación). Este módulo ingresa el paquete fisicoquímico del mismo informe de laboratorio y los furanos, y la Interpretación Técnica <strong>cruza ambas fuentes</strong>: por ejemplo, rigidez baja + humedad alta apuntan a ingreso de agua; acidez alta + tensión interfacial baja a oxidación; furanos + CO₂/CO bajo confirman daño al papel. Los campos son opcionales — complete los disponibles en su informe. Límites de referencia para clase ≤ 69 kV (ASTM / IEEE C57.106), los mismos de los informes Lubrisider.</p></div>
   </details>
   <div class="gas-grid">
-    <div class="gas fq"><div class="formula">H₂O</div><div class="nombre">Humedad · ASTM D1533 · ≤ 35</div>
-      <div class="in"><input id="fq_hum" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Humedad en ppm"><span class="unidad">ppm</span></div></div>
-    <div class="gas fq"><div class="formula">RD</div><div class="nombre">Rigidez dieléctrica · ASTM D1816 · ≥ 40</div>
-      <div class="in"><input id="fq_rig" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Rigidez dieléctrica en kV"><span class="unidad">kV</span></div></div>
-    <div class="gas fq"><div class="formula">TAN</div><div class="nombre">Acidez · ASTM D974 · ≤ 0,2</div>
-      <div class="in"><input id="fq_acid" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Acidez en mg KOH por gramo"><span class="unidad">mg KOH/g</span></div></div>
     <div class="gas fq"><div class="formula">TIF</div><div class="nombre">Tensión interfacial · ASTM D971 · ≥ 25</div>
       <div class="in"><input id="fq_ift" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Tensión interfacial en dinas por centímetro"><span class="unidad">dinas/cm</span></div></div>
-    <div class="gas fq"><div class="formula">tgδ 25</div><div class="nombre">Tangente delta 25 °C · ASTM D924 · ≤ 0,5</div>
-      <div class="in"><input id="fq_td25" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Tangente delta a 25 grados en porcentaje"><span class="unidad">%</span></div></div>
-    <div class="gas fq"><div class="formula">tgδ 90</div><div class="nombre">Tangente delta 90 °C · ASTM D924 · ≤ 5,0</div>
-      <div class="in"><input id="fq_td90" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Tangente delta a 90 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">tgδ 25</div><div class="nombre">F. de potencia 25 °C · ASTM D924 · ≤ 0,5</div>
+      <div class="in"><input id="fq_td25" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Factor de potencia a 25 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">tgδ 90</div><div class="nombre">F. de potencia 90 °C · ASTM D924 · ≤ 5,0</div>
+      <div class="in"><input id="fq_td90" type="number" min="0" step="0.001" inputmode="decimal" aria-label="Factor de potencia a 90 grados en porcentaje"><span class="unidad">%</span></div></div>
+    <div class="gas fq"><div class="formula">RD</div><div class="nombre">Dieléctrico · ASTM D1816 · ≥ 40</div>
+      <div class="in"><input id="fq_rig" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Rigidez dieléctrica en kV"><span class="unidad">kV</span></div></div>
+    <div class="gas fq"><div class="formula">Color</div><div class="nombre">Color · ASTM D1500 · informativo</div>
+      <div class="in"><input id="fq_color" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Color"><span class="unidad">—</span></div></div>
+    <div class="gas fq"><div class="formula">ρ</div><div class="nombre">Densidad · ASTM D1298 · informativo</div>
+      <div class="in"><input id="fq_dens" type="number" min="0" step="0.0001" inputmode="decimal" aria-label="Densidad en kilogramos por decímetro cúbico"><span class="unidad">kg/dm³</span></div></div>
+    <div class="gas fq"><div class="formula">Visual</div><div class="nombre">Aspecto visual · informativo</div>
+      <div class="in"><input id="fq_visual" type="text" aria-label="Aspecto visual del aceite" placeholder="Claro…"></div></div>
+    <div class="gas fq"><div class="formula">TAN</div><div class="nombre">Acidez · ASTM D974 · ≤ 0,2</div>
+      <div class="in"><input id="fq_acid" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Acidez en mg KOH por gramo"><span class="unidad">mg KOH/g</span></div></div>
+    <div class="gas fq"><div class="formula">H₂O</div><div class="nombre">Humedad · ASTM D1533 · ≤ 35</div>
+      <div class="in"><input id="fq_hum" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Humedad en ppm"><span class="unidad">ppm</span></div></div>
     <div class="gas fq"><div class="formula">2FAL</div><div class="nombre">2-furfural · ASTM D5837 · ≤ 100</div>
       <div class="in"><input id="fq_2fal" type="number" min="0" step="0.1" inputmode="decimal" aria-label="2-furfural en ppb"><span class="unidad">ppb</span></div></div>
     <div class="gas fq"><div class="formula">DP</div><div class="nombre">Grado de polimerización estimado</div>
@@ -671,10 +778,10 @@ const CLAVE_HIST = 'dga_historial_v2';
 /* ---------- Definición de gases y límites individuales IEEE C57.104 (ppm) ---------- */
 const GASES = [
   {id:'g_h2',  clave:'h2',  f:'H₂',   nombre:'Hidrógeno',            lim:[100,700,1800],  tdcg:true},
+  {id:'g_c2h2',clave:'c2h2',f:'C₂H₂', nombre:'Acetileno',            lim:[1,9,35],        tdcg:true},
   {id:'g_ch4', clave:'ch4', f:'CH₄',  nombre:'Metano',               lim:[120,400,1000],  tdcg:true},
   {id:'g_c2h6',clave:'c2h6',f:'C₂H₆', nombre:'Etano',                lim:[65,100,150],    tdcg:true},
   {id:'g_c2h4',clave:'c2h4',f:'C₂H₄', nombre:'Etileno',              lim:[50,100,200],    tdcg:true},
-  {id:'g_c2h2',clave:'c2h2',f:'C₂H₂', nombre:'Acetileno',            lim:[1,9,35],        tdcg:true},
   {id:'g_co',  clave:'co',  f:'CO',   nombre:'Monóxido de carbono',  lim:[350,570,1400],  tdcg:true},
   {id:'g_co2', clave:'co2', f:'CO₂',  nombre:'Dióxido de carbono',   lim:[2500,4000,10000],tdcg:false},
   {id:'g_o2',  clave:'o2',  f:'O₂',   nombre:'Oxígeno',              lim:null, tdcg:false},
@@ -781,6 +888,18 @@ function evaluarRatio(g){
 /* Valores típicos de concentración (IEC 60599, transformadores sin OLTC comunicante) */
 const TIPICOS_IEC = {h2:150, ch4:130, c2h2:20, c2h4:280, c2h6:90, co:600, co2:14000};
 
+/* Compuerta de aplicabilidad para Duval/IEC/Rogers/Key Gas: "generación significativa"
+   se cumple si un gas supera su valor típico IEC 60599 (ruido de fondo normal) O si ya
+   superó su propio límite Nivel 1 individual IEEE C57.104 (Tabla mostrada en Indicadores
+   Automáticos). Sin este segundo criterio, un gas podía figurar "Nivel 2" en esa tabla
+   y el sistema declarar igualmente "todos los gases bajo sus valores típicos" para los
+   métodos por relación/Duval — una contradicción entre dos secciones del mismo informe. */
+function generacionSignificativa(g){
+  return ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) ||
+         g.co > TIPICOS_IEC.co ||
+         GASES.some(x => x.tdcg && g[x.clave] > x.lim[0]);
+}
+
 const CASOS_IEC = {
   PD:{nombre:'Descargas parciales', css:'warn',
       desc:'Descargas de tipo corona en cavidades gaseosas o burbujas, con posible depósito de cera (X-wax) en el papel.'},
@@ -807,9 +926,8 @@ function fmtRazon(r){
 }
 
 function evaluarIEC(g){
-  // Aplicabilidad: al menos un gas combustible sobre sus valores típicos
-  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) ||
-                 g.co > TIPICOS_IEC.co;
+  // Aplicabilidad: al menos un gas combustible sobre su valor típico IEC o su límite Nivel 1 IEEE
+  const aplica = generacionSignificativa(g);
   const r1 = razon(g.c2h2, g.c2h4);   // C2H2/C2H4
   const r2 = razon(g.ch4,  g.h2);     // CH4/H2
   const r3 = razon(g.c2h4, g.c2h6);   // C2H4/C2H6
@@ -856,7 +974,7 @@ const CASOS_ROGERS = {
 };
 function evaluarRogers(g){
   const r1 = razon(g.c2h2, g.c2h4), r2 = razon(g.ch4, g.h2), r5 = razon(g.c2h4, g.c2h6);
-  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) || g.co > TIPICOS_IEC.co;
+  const aplica = generacionSignificativa(g);
   if((g.h2+g.ch4+g.c2h2+g.c2h4+g.c2h6) <= 0)
     return {valido:false, aplica:false, r1, r2, r5, caso:null, txt:'Sin datos', css:'na',
       desc:'Ingrese concentraciones de gases combustibles para calcular las relaciones de Rogers.'};
@@ -892,7 +1010,7 @@ const CASOS_KEYGAS = {
 };
 function evaluarKeyGas(g){
   const tdcg = calcTDCG(g);
-  const aplica = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]) || g.co > TIPICOS_IEC.co;
+  const aplica = generacionSignificativa(g);
   const base = g.h2 + g.ch4 + g.c2h6 + g.c2h4 + g.c2h2;   // combustibles sin CO
   const pct = {
     h2:  tdcg>0 ? 100*g.h2/tdcg : 0,   ch4: tdcg>0 ? 100*g.ch4/tdcg : 0,
@@ -968,34 +1086,45 @@ const POLI_T5 = {   // vértices [CH4, C2H4, C2H6]
 
 /* ---------- Fisicoquímicos del aceite (clase ≤ 69 kV, ASTM / IEEE C57.106) ---------- */
 const FQ_PARAMS = [
-  {id:'fq_hum',  k:'hum',  nombre:'Humedad',             unidad:'ppm',      lim:'≤ 35',   ok:v=>v<=35},
-  {id:'fq_rig',  k:'rig',  nombre:'Rigidez dieléctrica', unidad:'kV',       lim:'≥ 40',   ok:v=>v>=40},
-  {id:'fq_acid', k:'acid', nombre:'Acidez',              unidad:'mg KOH/g', lim:'≤ 0,2',  ok:v=>v<=0.2},
-  {id:'fq_ift',  k:'ift',  nombre:'Tensión interfacial', unidad:'dinas/cm', lim:'≥ 25',   ok:v=>v>=25},
-  {id:'fq_td25', k:'td25', nombre:'Tangente delta 25 °C',unidad:'%',        lim:'≤ 0,5',  ok:v=>v<=0.5},
-  {id:'fq_td90', k:'td90', nombre:'Tangente delta 90 °C',unidad:'%',        lim:'≤ 5,0',  ok:v=>v<=5.0},
-  {id:'fq_2fal', k:'fal',  nombre:'2-furfural (2FAL)',   unidad:'ppb',      lim:'≤ 100',  ok:v=>v<=100},
-  {id:'fq_dp',   k:'dp',   nombre:'Grado de polimerización', unidad:'',     lim:'≥ 450 (fin de vida ≈ 200)', ok:v=>v>=450}
+  {id:'fq_ift',   k:'ift',   nombre:'Tensión interfacial',  unidad:'dinas/cm', lim:'≥ 25',   ok:v=>v>=25},
+  {id:'fq_td25',  k:'td25',  nombre:'F. de potencia 25 °C', unidad:'%',        lim:'≤ 0,5',  ok:v=>v<=0.5},
+  {id:'fq_td90',  k:'td90',  nombre:'F. de potencia 90 °C', unidad:'%',        lim:'≤ 5,0',  ok:v=>v<=5.0},
+  {id:'fq_rig',   k:'rig',   nombre:'Rigidez dieléctrica',  unidad:'kV',       lim:'≥ 40',   ok:v=>v>=40},
+  {id:'fq_color', k:'color', nombre:'Color',                unidad:'',         lim:'Informativo', ok:()=>true, informativo:true},
+  {id:'fq_dens',  k:'dens',  nombre:'Densidad',             unidad:'kg/dm³',   lim:'Informativo', ok:()=>true, informativo:true},
+  {id:'fq_visual',k:'visual',nombre:'Aspecto visual',       unidad:'',         lim:'Informativo', ok:()=>true, informativo:true, tipo:'texto'},
+  {id:'fq_acid',  k:'acid',  nombre:'Acidez',               unidad:'mg KOH/g', lim:'≤ 0,2',  ok:v=>v<=0.2},
+  {id:'fq_hum',   k:'hum',   nombre:'Humedad',              unidad:'ppm',      lim:'≤ 35',   ok:v=>v<=35},
+  {id:'fq_2fal',  k:'fal',   nombre:'2-furfural (2FAL)',    unidad:'ppb',      lim:'≤ 100',  ok:v=>v<=100},
+  {id:'fq_dp',    k:'dp',    nombre:'Grado de polimerización', unidad:'',      lim:'≥ 450 (fin de vida ≈ 200)', ok:v=>v>=450}
 ];
 function evaluarFQ(){
   const val = {}, items = [];
   let ingresados = 0, desviaciones = 0;
   FQ_PARAMS.forEach(p => {
     const raw = $(p.id).value.trim();
+    if(p.tipo === 'texto'){
+      val[p.k] = raw === '' ? null : raw;
+      if(val[p.k] !== null){ ingresados++; items.push({p, v:val[p.k], cumple:true}); }
+      return;
+    }
     const v = raw === '' ? null : parseFloat(raw);
     val[p.k] = (v === null || isNaN(v)) ? null : v;
     if(val[p.k] !== null){
       ingresados++;
       const cumple = p.ok(val[p.k]);
-      if(!cumple) desviaciones++;
+      if(!p.informativo && !cumple) desviaciones++;
       items.push({p, v:val[p.k], cumple});
     }
   });
+  const evaluables = items.filter(i => !i.p.informativo).length;
+  const informativos = ingresados - evaluables;
+  const sufijoInfo = informativos ? ' · ' + informativos + ' informativo(s)' : '';
   let css='na', txt='Sin datos', resumen='';
   if(ingresados > 0){
-    if(desviaciones === 0){ css='ok'; txt='Conforme'; resumen = ingresados + ' parámetro(s) dentro de límites'; }
+    if(desviaciones === 0){ css='ok'; txt='Conforme'; resumen = evaluables + ' parámetro(s) dentro de límites' + sufijoInfo; }
     else { css = desviaciones >= 2 ? 'crit' : 'high'; txt = desviaciones + ' desviación(es)';
-           resumen = items.filter(i=>!i.cumple).map(i=>i.p.nombre).join(' · '); }
+           resumen = items.filter(i=>!i.p.informativo && !i.cumple).map(i=>i.p.nombre).join(' · '); }
   }
   return {val, items, ingresados, desviaciones, css, txt, resumen};
 }
@@ -1312,7 +1441,7 @@ function actualizar(){
      interpreta con generación significativa de gases. Con todos los gases combustibles
      bajo sus valores típicos, la posición del punto es ruido de fondo y el equipo se
      declara en condición normal — nunca en falla. */
-  const genSignificativa = ['h2','ch4','c2h2','c2h4','c2h6'].some(k => g[k] > TIPICOS_IEC[k]);
+  const genSignificativa = generacionSignificativa(g);
   const suma = g.ch4 + g.c2h4 + g.c2h2;
   let zona = null, pch4 = null, pc2h4 = null, pc2h2 = null, duvalNormal = false;
   if(suma > 0){
@@ -1425,10 +1554,15 @@ function actualizar(){
   $('fqChip').className = 'chip ' + fq.css;
   $('fqChip').textContent = fq.txt;
   $('fqResumen').textContent = fq.ingresados ? fq.resumen : '';
-  $('fqDetalle').innerHTML = fq.items.map(i =>
-    `<div class="fq-item ${i.cumple?'bien':'mal'}"><span class="fq-n">${i.p.nombre}</span>
-     <span class="fq-v">${fmt(i.v, i.p.k==='acid'||i.p.k==='td25'||i.p.k==='td90'?3:1)} ${i.p.unidad}</span>
-     <span style="color:var(--muted);font-size:12px">Límite: ${i.p.lim} — ${i.cumple?'cumple':'<strong style=\u0022color:var(--crit)\u0022>no cumple</strong>'}</span></div>`).join('');
+  $('fqDetalle').innerHTML = fq.items.map(i => {
+    const valorTxt = i.p.tipo === 'texto' ? i.v
+      : `${fmt(i.v, i.p.k==='acid'||i.p.k==='td25'||i.p.k==='td90'?3:(i.p.k==='dens'?4:1))} ${i.p.unidad}`;
+    const estadoTxt = i.p.informativo ? 'Informativo — sin criterio de aceptación normado'
+      : `Límite: ${i.p.lim} — ${i.cumple?'cumple':'<strong style=\u0022color:var(--crit)\u0022>no cumple</strong>'}`;
+    return `<div class="fq-item ${i.p.informativo ? '' : (i.cumple?'bien':'mal')}"><span class="fq-n">${i.p.nombre}</span>
+     <span class="fq-v">${valorTxt}</span>
+     <span style="color:var(--muted);font-size:12px">${estadoTxt}</span></div>`;
+  }).join('');
 
   /* --- Síntesis de métodos --- */
   const filaSin = (metodo, chipTxt, chipCss, obs) =>
@@ -1828,6 +1962,13 @@ GASES.forEach(x => $(x.id).addEventListener('input', actualizar));
 FQ_PARAMS.forEach(p => $(p.id).addEventListener('input', actualizar));
 actualizar();
 renderHistorial();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
